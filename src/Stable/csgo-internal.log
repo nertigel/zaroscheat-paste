@@ -1,4 +1,0 @@
-﻿  hookManager.cpp
-c:\users\nerti\onedrive\desktop\csgo trash\zaroscheat\src\core\managers\hookmanager.cpp(67): error C2440: 'reinterpret_cast': cannot convert from 'long (__stdcall CHookManager::* )(IDirect3DDevice9 *,RECT *,RECT *,HWND,RGNDATA *)' to 'void *'
-  c:\users\nerti\onedrive\desktop\csgo trash\zaroscheat\src\core\managers\hookmanager.cpp(67): note: There is no context in which this conversion is possible
-c:\users\nerti\onedrive\desktop\csgo trash\zaroscheat\src\core\managers\hookmanager.cpp(68): error C2276: '&': illegal operation on bound member function expression
