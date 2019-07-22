@@ -128,7 +128,7 @@ bool validateHeader( std::string& response ) {
 
 	return true;
 }*/
-/*
+
 void c_config::save(const std::string& file_name) {
 	std::stringstream config_stream;
 
@@ -298,4 +298,3 @@ Vector3 c_config::get_vector3( const std::string &key, const Vector3 &default_va
 }
 
 c_config *config = new c_config( );
-*/

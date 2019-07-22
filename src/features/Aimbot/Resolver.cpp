@@ -88,7 +88,7 @@ float ApproachAngle(float target, float value, float speed)
 
 void HandleBackUpResolve(CBaseEntity * pEnt) {
 
-	if (!config_system.item.ragebot.antiaim_correction)
+	if (!config->get_bool("rageAntiAimCorrection"))
 		return;
 
 	if (pEnt->team() == Globals::localPlayer->team())
@@ -99,7 +99,7 @@ void HandleBackUpResolve(CBaseEntity * pEnt) {
 	if (!player_animation_state)
 		return;
 
-	if (Globals::MissedShots[pEnt->EntIndex()] > 2) {
+	/*if (Globals::MissedShots[pEnt->EntIndex()] > 2) {
 		switch (Globals::MissedShots[pEnt->EntIndex()] % 4) {
 		case 0: player_animation_state->m_flGoalFeetYaw = player_animation_state->m_flGoalFeetYaw + 45; break;
 		case 1: player_animation_state->m_flGoalFeetYaw = player_animation_state->m_flGoalFeetYaw - 45; break;
@@ -107,7 +107,7 @@ void HandleBackUpResolve(CBaseEntity * pEnt) {
 		case 3: player_animation_state->m_flGoalFeetYaw = player_animation_state->m_flGoalFeetYaw + 30; break;
 		}
 	}
-	else {
+	else */{
 
 		float m_flLastClientSideAnimationUpdateTimeDelta = fabs(player_animation_state->m_iLastClientSideAnimationUpdateFramecount - player_animation_state->m_flLastClientSideAnimationUpdateTime);
 
@@ -188,22 +188,6 @@ void HandleBackUpResolve(CBaseEntity * pEnt) {
 			stored_yaw = pEnt->GetEyeAnglesPointer()->y;
 		}
 	}*/
-	//if (pEnt->GetVelocity().Length2D() > 0.1f)
-	//{
-	//	player_animation_state->m_flGoalFeetYaw = ApproachAngle(pEnt->GetLowerBodyYaw(), player_animation_state->m_flGoalFeetYaw, (player_animation_state->m_flStopToFullRunningFraction * 20.0f) + 30.0f *player_animation_state->m_flLastClientSideAnimationUpdateTime);
-	//}
-	//else
-	//{
-	//	player_animation_state->m_flGoalFeetYaw = ApproachAngle(pEnt->GetLowerBodyYaw(), player_animation_state->m_flGoalFeetYaw, (m_flLastClientSideAnimationUpdateTimeDelta * 100.0f));
-	//}
-	//if (Globals::MissedShots[pEnt->EntIndex()] > 3) {
-	//	switch (Globals::MissedShots[pEnt->EntIndex()] % 4) {
-	//	case 0: pEnt->GetEyeAnglesPointer()->y = pEnt->GetEyeAnglesPointer()->y + 45; break;
-	//	case 1: pEnt->GetEyeAnglesPointer()->y = pEnt->GetEyeAnglesPointer()->y - 45; break;
-	//	case 2: pEnt->GetEyeAnglesPointer()->y = pEnt->GetEyeAnglesPointer()->y - 30; break;
-	//	case 3: pEnt->GetEyeAnglesPointer()->y = pEnt->GetEyeAnglesPointer()->y + 30; break;
-	//	}
-	//}
 }
 
 void HandleHits(CBaseEntity * pEnt)
@@ -243,7 +227,7 @@ void HandleHits(CBaseEntity * pEnt)
 
 void Resolver::OnCreateMove() // cancer v2
 {
-	if (!config_system.item.ragebot.antiaim_correction)
+	if (!config->get_bool("rageAntiAimCorrection"))
 		return;
 
 	if (!Globals::localPlayer->alive())

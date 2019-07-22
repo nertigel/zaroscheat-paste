@@ -1,6 +1,6 @@
 #pragma once
 #include "../menu.hpp"
-/*
+
 class c_tab : public c_element {
 private:
 	Vector2 cursor_pos;
@@ -18,4 +18,3 @@ public:
 	void set_cursor_pos( const Vector2 &pos );
 
 };
-*/

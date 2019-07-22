@@ -15,7 +15,7 @@ void __fastcall CHookManager::overrideView( void* ecx, void* edx, CViewSetup* pS
 		return;
 
 	
-	if ( config_system.item.visuals.removals_recoil )
+	if (config->get_bool("espRemovalsRecoil"))
 	{
 		Vector3 viewPunch = Globals::localPlayer->viewPunchAngle( );
 		Vector3 aimPunch = Globals::localPlayer->aimPunchAngle( );
@@ -26,11 +26,11 @@ void __fastcall CHookManager::overrideView( void* ecx, void* edx, CViewSetup* pS
 	}
 
 	if ( !Globals::localPlayer->scoped( ) )
-		pSetup->fov = config_system.item.visuals.override_fov;
+		pSetup->fov = config->get_float("miscFoV");
 		//pSetup->fov = config->get_float( "miscFoV", 90.f );
 	
-	if ( config_system.item.visuals.removals_scope_zoom && Globals::localPlayer->activeWeapon( ) && Globals::localPlayer->activeWeapon( )->zoomLevel( ) )
-		pSetup->fov = config_system.item.visuals.override_fov;
+	if (config->get_bool("espRemovalsZoom") && Globals::localPlayer->activeWeapon( ) && Globals::localPlayer->activeWeapon( )->zoomLevel( ) )
+		pSetup->fov = config->get_float("miscFoV");
 		//pSetup->fov = config->get_float( "miscFoV", 90.f );
 
 	original( ecx, edx, pSetup );

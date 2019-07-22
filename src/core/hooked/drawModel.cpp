@@ -32,7 +32,7 @@ void __stdcall  CHookManager::drawModelExecute( void* context, void* state, cons
 	flat->IncrementReferenceCount();
 	lcMat->IncrementReferenceCount();
 
-	switch (config_system.item.visuals.chams_type) {
+	switch (config->get_int("chamsMaterial")) {
 	case 0:
 		material = textured;
 		break;
@@ -53,7 +53,7 @@ void __stdcall  CHookManager::drawModelExecute( void* context, void* state, cons
 	if ( g_Interfaces->gameEngine->inGame( ) ) {
 		if ( Globals::localPlayer )
 		{
-			if ( config_system.item.visuals.enable_visuals && config_system.item.visuals.chams_type != 0 )
+			if (config->get_bool("espEnable") && config->get_bool("chamsMaterial") != 0 )
 			{
 				if ( model_name.find( "models/player" ) != std::string::npos )
 				{
@@ -73,14 +73,12 @@ void __stdcall  CHookManager::drawModelExecute( void* context, void* state, cons
 										std::memcpy( matrix, records.front( ).boneMatrix, sizeof( records.front( ).boneMatrix ) );
 
 										// lag comp 
-										if ( Globals::localPlayer->alive( ) && lcMat && config_system.item.visuals.chams_backtrack_visualize && !entity->immunity( ) )
+										if ( Globals::localPlayer->alive( ) && lcMat && config->get_bool("chamsShadow") && !entity->immunity( ) )
 										{
-											auto red = config_system.item.visuals.clr_chams_backtrack_visualize[0] * 255;
-											auto green = config_system.item.visuals.clr_chams_backtrack_visualize[1] * 255;
-											auto blue = config_system.item.visuals.clr_chams_backtrack_visualize[2] * 255;
-											auto alpha = config_system.item.visuals.clr_chams_backtrack_visualize[3] * 255;
-											lcMat->AlphaModulate( alpha );
-											lcMat->ColorModulate( red, green, blue );
+											lcMat->AlphaModulate(config->get_color("colorChamsShadow").a() / 255.f);
+											lcMat->ColorModulate(config->get_color("colorChamsShadow").r() / 255.f,
+												config->get_color("colorChamsShadow").g() / 255.f,
+												config->get_color("colorChamsShadow").b() / 255.f);
 											lcMat->SetMaterialVarFlag( MATERIAL_VAR_IGNOREZ, true );
 											g_Interfaces->modelRender->ForcedMaterialOverride( lcMat );
 											originalFn( g_Interfaces->modelRender, context, state, info, matrix );
@@ -89,14 +87,12 @@ void __stdcall  CHookManager::drawModelExecute( void* context, void* state, cons
 									}
 
 									// visible 
-									if (config_system.item.visuals.chams_enemy_vis) // player
+									if (config->get_bool("chamsEnemy")) // player
 									{
-										auto red = config_system.item.visuals.clr_chams_enemy_vis[0] * 255;
-										auto green = config_system.item.visuals.clr_chams_enemy_vis[1] * 255;
-										auto blue = config_system.item.visuals.clr_chams_enemy_vis[2] * 255;
-										auto alpha = config_system.item.visuals.clr_chams_enemy_vis[3] * 255;
-										material->AlphaModulate(alpha);
-										material->ColorModulate(red, green, blue);
+										material->AlphaModulate(config->get_color("colorChamsEnemy").a() / 255.f);
+										material->ColorModulate(config->get_color("colorChamsEnemy").r() / 255.f,
+											config->get_color("colorChamsEnemy").g() / 255.f,
+											config->get_color("colorChamsEnemy").b() / 255.f);
 										material->SetMaterialVarFlag(MATERIAL_VAR_IGNOREZ, false);
 
 										g_Interfaces->modelRender->ForcedMaterialOverride(material);
@@ -104,14 +100,12 @@ void __stdcall  CHookManager::drawModelExecute( void* context, void* state, cons
 									}
 
 									//invisible
-									if (config_system.item.visuals.chams_enemy_invis) // player (behind wall)
+									if (config->get_bool("chamsEnemyXQZ")) // player (behind wall)
 									{
-										auto red = config_system.item.visuals.clr_chams_enemy_invis[0] * 255;
-										auto green = config_system.item.visuals.clr_chams_enemy_invis[1] * 255;
-										auto blue = config_system.item.visuals.clr_chams_enemy_invis[2] * 255;
-										auto alpha = config_system.item.visuals.clr_chams_enemy_invis[3] * 255;
-										material->AlphaModulate(alpha);
-										material->ColorModulate(red, green, blue);
+										material->AlphaModulate(config->get_color("colorChamsEnemyXQZ").a() / 255.f);
+										material->ColorModulate(config->get_color("colorChamsEnemyXQZ").r() / 255.f,
+											config->get_color("colorChamsEnemyXQZ").g() / 255.f,
+											config->get_color("colorChamsEnemyXQZ").b() / 255.f);
 										material->SetMaterialVarFlag(MATERIAL_VAR_IGNOREZ, true);
 
 										g_Interfaces->modelRender->ForcedMaterialOverride(material);
@@ -119,31 +113,27 @@ void __stdcall  CHookManager::drawModelExecute( void* context, void* state, cons
 									}
 								}
 							}
-							if (entity->team() == Globals::localPlayer->team()) // teammate
+							else if (entity->team() == Globals::localPlayer->team()) // teammate
 							{
 								// visible 
-								if (config_system.item.visuals.chams_team_vis) // teammate
+								if (config->get_bool("chamsTeammates")) // teammate
 								{
-									auto red = config_system.item.visuals.clr_chams_team_vis[0] * 255;
-									auto green = config_system.item.visuals.clr_chams_team_vis[1] * 255;
-									auto blue = config_system.item.visuals.clr_chams_team_vis[2] * 255;
-									auto alpha = config_system.item.visuals.clr_chams_team_vis[3] * 255;
-									material->AlphaModulate(alpha);
-									material->ColorModulate(red, green, blue);
+									material->AlphaModulate(config->get_color("colorChamsTeammates").a() / 255.f);
+									material->ColorModulate(config->get_color("colorChamsTeammates").r() / 255.f,
+										config->get_color("colorChamsTeammates").g() / 255.f,
+										config->get_color("colorChamsTeammates").b() / 255.f);
 									material->SetMaterialVarFlag(MATERIAL_VAR_IGNOREZ, false);
 
 									g_Interfaces->modelRender->ForcedMaterialOverride(material);
 									originalFn(g_Interfaces->modelRender, context, state, info, matrix);
 								}
 								//invisible
-								if (config_system.item.visuals.chams_team_invis) // teammate (behind wall)
+								if (config->get_bool("chamsTeammatesXQZ")) // teammate (behind wall)
 								{
-									auto red = config_system.item.visuals.clr_chams_team_invis[0] * 255;
-									auto green = config_system.item.visuals.clr_chams_team_invis[1] * 255;
-									auto blue = config_system.item.visuals.clr_chams_team_invis[2] * 255;
-									auto alpha = config_system.item.visuals.clr_chams_team_invis[3] * 255;
-									material->AlphaModulate(alpha);
-									material->ColorModulate(red, green, blue);
+									material->AlphaModulate(config->get_color("colorChamsTeammatesXQZ").a() / 255.f);
+									material->ColorModulate(config->get_color("colorChamsTeammatesXQZ").r() / 255.f,
+										config->get_color("colorChamsTeammatesXQZ").g() / 255.f,
+										config->get_color("colorChamsTeammatesXQZ").b() / 255.f);
 									material->SetMaterialVarFlag(MATERIAL_VAR_IGNOREZ, true);
 
 									g_Interfaces->modelRender->ForcedMaterialOverride(material);
@@ -158,7 +148,7 @@ void __stdcall  CHookManager::drawModelExecute( void* context, void* state, cons
 
 								if ( Globals::localPlayer->activeWeapon( ) )
 								{
-									auto alpha = config_system.item.visuals.clr_chams_local[3] * 255;
+									auto alpha = config->get_color("colorChamsTeammatesXQZ").b() / 255.f;
 									if ( Globals::localPlayer->activeWeapon( )->zoomLevel( ) == 1 )
 										blendAmt = ( alpha ) * 0.1f;
 									else if ( Globals::localPlayer->activeWeapon( )->zoomLevel( ) == 2 )
@@ -169,7 +159,7 @@ void __stdcall  CHookManager::drawModelExecute( void* context, void* state, cons
 
 								// Fake angle chams
 						
-								if ( config_system.item.visuals.chams_local_desync )
+								if (config->get_bool("chamsLocalDesync"))
 								{
 									Vector3 bonePos;
 									Vector3 outPos;
@@ -187,12 +177,10 @@ void __stdcall  CHookManager::drawModelExecute( void* context, void* state, cons
 									}
 									
 									
-									auto red = config_system.item.visuals.clr_chams_local_desync[0] * 255;
-									auto green = config_system.item.visuals.clr_chams_local_desync[1] * 255;
-									auto blue = config_system.item.visuals.clr_chams_local_desync[2] * 255;
-									auto alpha = config_system.item.visuals.clr_chams_local_desync[3] * 255;
-									material->AlphaModulate(alpha);
-									material->ColorModulate(red, green, blue);
+									material->AlphaModulate(config->get_color("colorDesyncModel").a() / 255.f);
+									material->ColorModulate(config->get_color("colorDesyncModel").r() / 255.f,
+										config->get_color("colorDesyncModel").g() / 255.f,
+										config->get_color("colorDesyncModel").b() / 255.f);
 
 									material->SetMaterialVarFlag( MATERIAL_VAR_IGNOREZ, false );
 									//Globals::localPlayer->setAbsOrigin(Globals::fakePosition);
@@ -202,15 +190,12 @@ void __stdcall  CHookManager::drawModelExecute( void* context, void* state, cons
 								}
 
 								// Regular chams
-								if ( config_system.item.visuals.chams_local ) {
-									auto red = config_system.item.visuals.clr_chams_local[0] * 255;
-									auto green = config_system.item.visuals.clr_chams_local[1] * 255;
-									auto blue = config_system.item.visuals.clr_chams_local[2] * 255;
-									auto alpha = config_system.item.visuals.clr_chams_local[3] * 255;
-									material->AlphaModulate( shouldBlend ? blendAmt : alpha );
+								if (config->get_bool("chamsLocal")) {
+									material->AlphaModulate( shouldBlend ? blendAmt : config->get_color("colorChamsLocal").a() / 255.f);
 
-									material->AlphaModulate(alpha);
-									material->ColorModulate(red, green, blue);
+									material->ColorModulate(config->get_color("colorChamsLocal").r() / 255.f,
+										config->get_color("colorChamsLocal").g() / 255.f,
+										config->get_color("colorChamsLocal").b() / 255.f);
 
 									material->SetMaterialVarFlag( MATERIAL_VAR_IGNOREZ, false );
 									g_Interfaces->modelRender->ForcedMaterialOverride( material );
@@ -221,14 +206,12 @@ void __stdcall  CHookManager::drawModelExecute( void* context, void* state, cons
 						if (model_name.find("arms") != std::string::npos)
 						{
 							// arms
-							if (config_system.item.visuals.chams_hands)
+							if (config->get_bool("chamsHands"))
 							{
-								auto red = config_system.item.visuals.clr_chams_hands[0] * 255;
-								auto green = config_system.item.visuals.clr_chams_hands[1] * 255;
-								auto blue = config_system.item.visuals.clr_chams_hands[2] * 255;
-								auto alpha = config_system.item.visuals.clr_chams_hands[3] * 255;
-								material->AlphaModulate(alpha);
-								material->ColorModulate(red, green, blue);
+								material->AlphaModulate(config->get_color("colorChamsHands").a() / 255.f);
+								material->ColorModulate(config->get_color("colorChamsHands").r() / 255.f,
+									config->get_color("colorChamsHands").g() / 255.f,
+									config->get_color("colorChamsHands").b() / 255.f);
 
 								material->SetMaterialVarFlag(MATERIAL_VAR_IGNOREZ, false);
 
@@ -241,14 +224,12 @@ void __stdcall  CHookManager::drawModelExecute( void* context, void* state, cons
 							if (!(model_name.find("arms") != std::string::npos))
 							{
 								// arms
-								if (config_system.item.visuals.chams_weapons)
+								if (config->get_bool("chamsWeapon"))
 								{
-									auto red = config_system.item.visuals.clr_chams_weapons[0] * 255;
-									auto green = config_system.item.visuals.clr_chams_weapons[1] * 255;
-									auto blue = config_system.item.visuals.clr_chams_weapons[2] * 255;
-									auto alpha = config_system.item.visuals.clr_chams_weapons[3] * 255;
-									material->AlphaModulate(alpha);
-									material->ColorModulate(red, green, blue);
+									material->AlphaModulate(config->get_color("colorChamsWeapon").a() / 255.f);
+									material->ColorModulate(config->get_color("colorChamsWeapon").r() / 255.f,
+										config->get_color("colorChamsWeapon").g() / 255.f,
+										config->get_color("colorChamsWeapon").b() / 255.f);
 
 									material->SetMaterialVarFlag(MATERIAL_VAR_IGNOREZ, false);
 

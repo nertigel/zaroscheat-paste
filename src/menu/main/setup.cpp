@@ -1,9 +1,5 @@
 #include "setup.hpp"
-#include "../menu.hpp"
-#include "../imgui/imgui.h"
-#include "../imgui/imgui_internal.h"
 
-/*
 #include "../menu.hpp"
 #include "../controls/tab.hpp"
 #include "../controls/group.hpp"
@@ -15,14 +11,14 @@
 #include "../controls/colorpicker.hpp"
 #include "../controls/button.hpp"
 
-void c_menu::run_visuals_preview() {
+void menu_setup::setup() {
 
-	/*config->set("clr_menu", Color(225, 0, 255));
+	config->set("clr_menu", Color(225, 0, 255));
 	config->set("colorGlow", Color(200, 80, 140)); // pink
 	config->set("colorChamsEnemy", Color(130, 220, 90)); // green
 	config->set("colorChamsEnemyXQZ", Color(35, 100, 160)); // aqua / light blue
 	config->set("menu_bind", 45); // 45 = INSERT
-	config->set("thirdpersonKey", 84); // 84 = T
+	config->set("espThirdpersonKey", 84); // 84 = T
 	config->set("miscFoV", 90);
 	config->set("miscAspectRatioW", 1920);
 	config->set("miscAspectRatioH", 1080);
@@ -31,7 +27,7 @@ void c_menu::run_visuals_preview() {
 	config->set("espWatermark", true);
 
 	menu->set_position(Vector2(100, 100));
-	menu->set_size(Vector2(500, 513));*/
+	menu->set_size(Vector2(500, 513));
 	/*
 	Size(x,y): if Menu size is 500 x 513 then a full group-box should be 223 x 436 | half group-box should be 223 x 221
 
@@ -50,32 +46,25 @@ void c_menu::run_visuals_preview() {
 	Tabs: Dont forget to change tabs' width and height at menu.cpp
 	*/
 
-	/*c_tab* legit_tab = new c_tab("Legit-bot");
+	c_tab* legit_tab = new c_tab("Legit-bot");
 	{
 		menu->add_tab(legit_tab);
 
 		c_group* main_group = new c_group("Main", Vector2(223, 436));
 		{
-			main_group->add_child(new c_checkbox("Enable legit-bot", "legitAimEnable"));
-			main_group->add_child(new c_checkbox("Backtrack", "legitBacktrack"));
-			main_group->add_child(new c_slider("Field of view", "legitAimFOV", 1, 30, true));
-			main_group->add_child(new c_combo("Priority hitbox", "legitPriorityHitbox", { "Head", "Chest", "Stomach", "Arms", "Legs", "Feet" }));
-			main_group->add_child(new c_slider("Linear progression threshold", "legitLinearProgressionThreshold", 1, 100, true));
-			main_group->add_child(new c_checkbox("Enable RCS", "legitEnableRCS"));
-			main_group->add_child(new c_slider("RCS X", "legitRCSX", 1, 100, true));
-			main_group->add_child(new c_slider("RCS Y", "legitRCSY", 1, 100, true));
+
 		}
 		legit_tab->add_child(main_group);
-	}*/
+	}
 
-	/*c_tab *rage_tab = new c_tab("Rage-bot");
+	c_tab *rage_tab = new c_tab("Rage-bot");
 	{
 		menu->add_tab(rage_tab);
 
 		c_group *general_group = new c_group("Aimbot", Vector2(223, 436));
 		{
 			general_group->add_child(new c_checkbox("Enable rage-bot", "rageEnable"));
-			general_group->add_child(new c_checkbox("Automatic fire", "rageAutoFire"));
+			general_group->add_child(new c_checkbox("Automatic fire", "rageAutomaticFire"));
 			general_group->add_child(new c_multicombo("Hitboxes", "rageHitboxes", { "Head", "Chest", "Stomach", "Arms", "Legs", "Feet" }));
 			general_group->add_child(new c_checkbox("Avoid limbs if moving", "rageAvoidLimbsMoving"));
 			general_group->add_child(new c_checkbox("Avoid head if jumping", "rageAvoidHeadJumping"));
@@ -92,10 +81,10 @@ void c_menu::run_visuals_preview() {
 		c_group *other_group = new c_group("Other", Vector2(223, 210));
 		{
 			other_group->add_child(new c_hotkey("Body-aim key", "rageBodyAimKey", true));
-			other_group->add_child(new c_checkbox("Force body-aim", "rageBodyAimOnKey"));
+			other_group->add_child(new c_checkbox("Force body-aim", "rageForceBodyAim"));
 
-			other_group->add_child(new c_checkbox("Backtracking", "rageBacktrack"));
-			other_group->add_child(new c_combo("Accuracy boost type", "rageLagCompType", { "Last", "All" }));
+			other_group->add_child(new c_checkbox("Backtrack", "rageBacktrack"));
+			other_group->add_child(new c_combo("Accuracy boost type", "rageBacktrackType", { "Last", "All" }));
 
 			//other_group->add_child(new c_checkbox("Delay shot", "rageDelayShot"));
 			other_group->add_child(new c_checkbox("Body-aim if lethal", "rageBodyAimLethal"));
@@ -103,9 +92,9 @@ void c_menu::run_visuals_preview() {
 			other_group->add_child(new c_checkbox("Body-aim if missed shots", "rageBodyAimShots"));
 			other_group->add_child(new c_slider("X missed shots", "rageBodyAimShotsAmount", 1, 10, true, L"%.0f%%"));
 			other_group->add_child(new c_checkbox("Anti-aim correction", "rageAntiAimCorrection"));
-			other_group->add_child(new c_checkbox("Automatic scope", "rageAutoScope"));
-			other_group->add_child(new c_checkbox("Automatic stop", "rageAutoStop"));
-			other_group->add_child(new c_combo("Type", "rageAutoStopType", { "Minimum speed", "Full stop" }));
+			other_group->add_child(new c_checkbox("Automatic scope", "rageAutomaticScope"));
+			other_group->add_child(new c_checkbox("Automatic stop", "rageAutomaticStop"));
+			other_group->add_child(new c_combo("Type", "rageAutomaticStopType", { "Minimum speed", "Full stop" }));
 		}
 		rage_tab->add_child(other_group);
 
@@ -116,7 +105,7 @@ void c_menu::run_visuals_preview() {
 			fakelag_group->add_child(new c_combo("Type", "rageChokeType", { "Factor", "Switch", "Adaptive", "Random" }));
 			fakelag_group->add_child(new c_slider("Ticks", "rageChokeAmount", 1, 14, true, "%.0f"));
 
-			fakelag_group->add_child(new c_hotkey("Fake duck key", "miscfakeDuckKey", true));
+			fakelag_group->add_child(new c_hotkey("Fake duck key", "rageFakeDuckKey", true));
 			fakelag_group->add_child(new c_checkbox("Fake duck", "rageFakeDuck"));
 		}
 		rage_tab->add_child(fakelag_group);
@@ -130,10 +119,11 @@ void c_menu::run_visuals_preview() {
 		{
 			antiaim_settings_group->add_child(new c_checkbox("Enable anti-aim", "aaEnable"));
 
-			antiaim_settings_group->add_child(new c_combo("Desync", "aaDesync", { "None", "1 cmd", "2 cmd", "1 ocmd", "2 ocmd" }));
+			//antiaim_settings_group->add_child(new c_combo("Desync", "aaDesync", { "None", "test" }));
+			antiaim_settings_group->add_child(new c_checkbox("Desync", "aaDesync"));
 
-			antiaim_settings_group->add_child(new c_hotkey("Slow motion key", "aaSlowWalkKey", true));
-			antiaim_settings_group->add_child(new c_checkbox("Slow motion", "aaSlowWalk"));
+			antiaim_settings_group->add_child(new c_hotkey("Slow motion key", "aaSlowMotionKey", true));
+			antiaim_settings_group->add_child(new c_checkbox("Slow motion", "aaSlowMotion"));
 
 			antiaim_settings_group->add_child(new c_hotkey("Flip key", "aaFlipKey", false));
 			//antiaim_settings_group->add_child(new c_checkbox("Flip", "aaFlip"));
@@ -145,7 +135,7 @@ void c_menu::run_visuals_preview() {
 			standing_aa_group->add_child(new c_combo("Pitch", "aaStandingPitch", { "None", "Down", "Up", "Zero", "Jitter" }));
 			standing_aa_group->add_child(new c_combo("Yaw", "aaStandingYaw", { "None", "Backwards", "Sideways" }));
 			standing_aa_group->add_child(new c_combo("Jitter type", "aaStandingJitterType", { "None", "Offset", "Random" }));
-			standing_aa_group->add_child(new c_slider("Jitter range", "aaStandingJitterRange", 1, 180, true, L"%.0f�"));
+			standing_aa_group->add_child(new c_slider("Jitter range", "aaStandingJitterRange", 1, 180, true, L"%.0f"));
 
 			standing_aa_group->add_child(new c_checkbox("Auto direction", "aaStandingAutoDir"));
 		}
@@ -156,7 +146,7 @@ void c_menu::run_visuals_preview() {
 			moving_aa_group->add_child(new c_combo("Pitch", "aaMovingPitch", { "None", "Down", "Up", "Zero", "Jitter" }));
 			moving_aa_group->add_child(new c_combo("Yaw", "aaMovingYaw", { "None", "Backwards", "Sideways" }));
 			moving_aa_group->add_child(new c_combo("Jitter type", "aaMovingJitterType", { "None", "Offset", "Random" }));
-			moving_aa_group->add_child(new c_slider("Jitter range", "aaMovingJitterRange", 1, 180, true, L"%.0f�"));
+			moving_aa_group->add_child(new c_slider("Jitter range", "aaMovingJitterRange", 1, 180, true, L"%.0f"));
 
 			moving_aa_group->add_child(new c_checkbox("Auto direction", "aaMovingAutoDir"));
 		}
@@ -167,7 +157,7 @@ void c_menu::run_visuals_preview() {
 			inair_aa_group->add_child(new c_combo("Pitch", "aaInAirPitch", { "None", "Down", "Up", "Zero", "Jitter" }));
 			inair_aa_group->add_child(new c_combo("Yaw", "aaInAirYaw", { "None", "Backwards", "Sideways" }));
 			inair_aa_group->add_child(new c_combo("Jitter type", "aaInAirJitterType", { "None", "Offset", "Random" }));
-			inair_aa_group->add_child(new c_slider("Jitter range", "aaInAirJitterRange", 1, 180, true, L"%.0f�"));
+			inair_aa_group->add_child(new c_slider("Jitter range", "aaInAirJitterRange", 1, 180, true, L"%.0f"));
 
 			inair_aa_group->add_child(new c_checkbox("Auto direction", "aaInAirAutoDir"));
 		}
@@ -195,8 +185,8 @@ void c_menu::run_visuals_preview() {
 			player_group->add_child(new c_colorpicker("nameclr", "colorName", true, true));
 			player_group->add_child(new c_checkbox("Name", "espName"));
 
-			//player_group->add_child(new c_checkbox("Flags", "espFlags"));
-			player_group->add_child(new c_multicombo("Flags", "espFlags", { "Has armour", "Is scoped", "Is defusing", "Has hostage", "Is reloading", "Is fake-duck" }));
+			player_group->add_child(new c_checkbox("Flags", "espFlagsEnable"));
+			player_group->add_child(new c_multicombo("Flags type", "espFlags", { "Money", "Has armour", "Is scoped", "Is defusing", "Has hostage", "Is reloading", "Is fake-duck" }));
 
 			player_group->add_child(new c_checkbox("Weapon text", "espWeapon"));
 			player_group->add_child(new c_colorpicker("wpnclr", "colorWeapon", true, true));
@@ -208,7 +198,7 @@ void c_menu::run_visuals_preview() {
 			player_group->add_child(new c_checkbox("Distance", "espDistance"));
 
 			player_group->add_child(new c_colorpicker("glowclr", "colorGlow", true, true));
-			player_group->add_child(new c_multicombo("Glow", "espGlow", { "Enemy", "Team", "Hostage", "Local" }));
+			player_group->add_child(new c_multicombo("Glow", "espGlow", { "Enemy", "Team", "Local" }));
 
 			//player_group->add_child(new c_colorpicker("glowclr", "colorGlow", true, true));
 			//player_group->add_child(new c_checkbox("Glow", "espGlow"));
@@ -216,22 +206,20 @@ void c_menu::run_visuals_preview() {
 			//player_group->add_child(new c_colorpicker("glowclr", "colorGlowLocal", true, true));
 			//player_group->add_child(new c_checkbox("Local glow", "espGlowLocal"));
 
-			//player_group->add_child(new c_colorpicker("skeletonclr", "colorSkeleton", true, false));
-			//player_group->add_child(new c_checkbox("Skeleton", "espSkeleton"));
+			player_group->add_child(new c_colorpicker("skeletonclr", "colorSkeleton", true, false));
+			player_group->add_child(new c_checkbox("Skeleton", "espSkeleton"));
 
 			player_group->add_child(new c_colorpicker("skeletonbtclr", "colorSkeletonBT", true, false));
-			player_group->add_child(new c_checkbox("History Skeleton", "espSkeletonBT"));
+			player_group->add_child(new c_checkbox("History skeleton", "espSkeletonBT"));
 
-			player_group->add_child(new c_colorpicker("Out of FOV color", "colorOffscreenEsp", true, true));
-			player_group->add_child(new c_checkbox("Out of FOV arrow", "espOffscreen"));
+			player_group->add_child(new c_colorpicker("Out of fov color", "colorOffscreenEsp", true, true));
+			player_group->add_child(new c_checkbox("Out of fov arrow", "espOffscreen"));
 
 			player_group->add_child(new c_slider("Arrow size", "espOffscreenSize", 5.f, 25.f, "%.0fpx"));
 			player_group->add_child(new c_slider("Arrow radius", "espOffscreenRadius", 10.f, 100.f, "%.0f%%"));
 
 			player_group->add_child(new c_checkbox("Hit marker", "espHitmarker"));
-			player_group->add_child(new c_combo("Hit marker sound", "espHitSound", { "Off", "Arena switch press 02", "Bubble", "Cod" }));
-
-			player_group->add_child(new c_checkbox("Money", "espMoney"));
+			player_group->add_child(new c_combo("Hit marker sound", "espHitmarkerSound", { "Off", "Arena switch press 02", "Bubble", "Cod" }));
 		}
 
 		c_group *models_group = new c_group("Coloured models", Vector2(223, 190));
@@ -257,13 +245,13 @@ void c_menu::run_visuals_preview() {
 			models_group->add_child(new c_checkbox("Weapon", "chamsWeapon"));
 
 			models_group->add_child(new c_colorpicker("shadowchamsclr", "colorChamsShadow", true, true));
-			models_group->add_child(new c_checkbox("History chams", "chamsShadow"));
+			models_group->add_child(new c_checkbox("Shadow", "chamsShadow"));
 
 			models_group->add_child(new c_colorpicker("local", "colorChamsLocal", true, true));
 			models_group->add_child(new c_checkbox("Local", "chamsLocal"));
 
 			models_group->add_child(new c_colorpicker("clrDesync", "colorDesyncModel", true, true));
-			models_group->add_child(new c_checkbox("Fake local shadow", "chamsLocalDesync"));
+			models_group->add_child(new c_checkbox("Local shadow", "chamsLocalDesync"));
 		}
 		visuals_tab->add_child(models_group);
 
@@ -274,7 +262,8 @@ void c_menu::run_visuals_preview() {
 			other_group->add_child(new c_multicombo("Dropped weapons", "worldWeapon", { "Name", "Ammo", "Chams" }));
 
 			other_group->add_child(new c_checkbox("Spectator list", "miscSpectators"));
-			other_group->add_child(new c_checkbox("Sniper crosshair", "miscCrosshair"));
+			other_group->add_child(new c_checkbox("Force crosshair", "miscCrosshair"));
+
 			other_group->add_child(new c_colorpicker("clrOutside", "colorInnacuracyOutside", true, true));
 			other_group->add_child(new c_checkbox("Inaccuracy overlay", "miscInaccuracyOverlay"));
 			other_group->add_child(new c_slider("Overlay size", "miscInaccuracySize", 0, 100, true, "%.0f%%"));
@@ -291,16 +280,16 @@ void c_menu::run_visuals_preview() {
 
 		c_group *effects_group = new c_group("Effects", Vector2(223, 210));
 		{
-			effects_group->add_child(new c_checkbox("Remove flashbang effects", "removalsFlash"));
-			effects_group->add_child(new c_checkbox("Remove smoke grenades", "removalsSmoke"));
-			effects_group->add_child(new c_checkbox("Remove scope overlay", "removalsScope"));
-			effects_group->add_child(new c_checkbox("Remove zoom", "removalsZoom"));
-			effects_group->add_child(new c_checkbox("Remove visual recoil", "removalsRecoil"));
+			effects_group->add_child(new c_checkbox("Remove flashbang effects", "espRemovalsFlash"));
+			effects_group->add_child(new c_checkbox("Remove smoke grenades", "espRemovalsSmoke"));
+			effects_group->add_child(new c_checkbox("Remove scope overlay", "espRemovalsScope"));
+			effects_group->add_child(new c_checkbox("Remove zoom", "espRemovalsZoom"));
+			effects_group->add_child(new c_checkbox("Remove visual recoil", "espRemovalsRecoil"));
 
 			effects_group->add_child(new c_multicombo("World modulation", "worldModulation", { "Night", "Fullbright" }));
 			effects_group->add_child(new c_slider("Brightness", "nightModeDarkness", 0, 100, true, "%.0f%%"));
 
-			effects_group->add_child(new c_hotkey("Thirdperson key", "thirdpersonKey", true));
+			effects_group->add_child(new c_hotkey("Thirdperson key", "espThirdpersonKey", true));
 			effects_group->add_child(new c_checkbox("Thirdperson", "espThirdperson"));
 		}
 		visuals_tab->add_child(effects_group);
@@ -312,14 +301,17 @@ void c_menu::run_visuals_preview() {
 
 		c_group *misc_group = new c_group("Miscellaneous", Vector2(223, 436));
 		{
-			misc_group->add_child(new c_slider("Override fov", "miscFoV", 30, 120, true, L"%.0f�"));
-			misc_group->add_child(new c_checkbox("Bunnyhop", "miscBhop"));
-			misc_group->add_child(new c_checkbox("Air strafe", "miscStrafe"));
+			misc_group->add_child(new c_slider("Override fov", "miscFoV", 30, 120, true, L"%.0f"));
+			misc_group->add_child(new c_checkbox("Bunnyhop", "miscBunnyhop"));
 
+			misc_group->add_child(new c_checkbox("Air strafe", "miscStrafe"));
 			misc_group->add_child(new c_checkbox("Movement key strafer", "miscKeyStrafe"));
 			misc_group->add_child(new c_slider("Strafer speed", "miscStrafeSpeed", 0, 15, true, "%.0f%%"));
 
 			misc_group->add_child(new c_checkbox("Air duck", "miscDuckInAir"));
+
+			misc_group->add_child(new c_hotkey("Edge jump key", "miscEdgeJumpKey", true));
+			misc_group->add_child(new c_checkbox("Edge jump", "miscEdgeJump"));
 
 			misc_group->add_child(new c_checkbox("Clan tag spammer", "miscClanTag"));
 
@@ -402,4 +394,3 @@ void c_menu::run_visuals_preview() {
 
 	menu->set_active_tab(rage_tab); // active tab
 }
-*/

@@ -27,14 +27,14 @@ bool IsSlowWalkingCheck(CUserCmd* pCmd)
 	return ((Globals::isSlowWalking) && (Globals::localPlayer->flags() & FL_ONGROUND));
 }
 
-void CAntiAim::onMove( CUserCmd *userCmd )
+void CAntiAim::onMove(CUserCmd* userCmd)
 {
-	if ( !g_Interfaces->gameEngine->inGame( ) && !g_Interfaces->gameEngine->connected( ) ) {
+	if (!g_Interfaces->gameEngine->inGame() && !g_Interfaces->gameEngine->connected()) {
 		Globals::desyncEnabledSpecialChecks = false;
 		return;
 	}
 
-	if (!config_system.item.antiaim.enable_antiaim) {
+	if (!config->get_bool("aaEnable")) {
 		Globals::desyncEnabledSpecialChecks = false;
 		return;
 	}
@@ -44,67 +44,71 @@ void CAntiAim::onMove( CUserCmd *userCmd )
 		return;
 	}
 
-	if ( !Globals::localPlayer->alive( ) ) {
+	if (!Globals::localPlayer->alive()) {
 		Globals::desyncEnabledSpecialChecks = false;
 		return;
 	}
 
-	if ( Globals::oCmd->buttons & IN_USE ) {
+	if (Globals::oCmd->buttons & IN_USE) {
 		Globals::desyncEnabledSpecialChecks = false;
 		return;
 	}
 
-	if ( !Globals::localPlayer->activeWeapon( ) || Globals::localPlayer->isNade( ) ) {
+	if (!Globals::localPlayer->activeWeapon() || Globals::localPlayer->isNade()) {
 		Globals::desyncEnabledSpecialChecks = false;
 		return;
 	}
 
-	if ( Globals::localPlayer->moveType( ) == movetype_ladder /*|| Globals::localPlayer->moveType( ) == movetype_noclip  */) {
+	if (Globals::localPlayer->moveType() == movetype_ladder /*|| Globals::localPlayer->moveType( ) == movetype_noclip  */) {
 		Globals::desyncEnabledSpecialChecks = false;
 		return;
 	}
 
-	if ( Globals::localPlayer->activeWeapon( )->itemDefenitionIndex( ) == weapon_revolver )
+	if (Globals::localPlayer->activeWeapon()->itemDefenitionIndex() == weapon_revolver)
 	{
-		if ( userCmd->buttons & IN_ATTACK2 ) {
+		if (userCmd->buttons & IN_ATTACK2) {
 			Globals::desyncEnabledSpecialChecks = false;
 			return;
 		}
 
-		if ( Globals::localPlayer->activeWeapon( )->canFirePostpone( ) && ( userCmd->buttons & IN_ATTACK ) ) {
+		if (Globals::localPlayer->activeWeapon()->canFirePostpone() && (userCmd->buttons & IN_ATTACK)) {
 			Globals::desyncEnabledSpecialChecks = false;
 			return;
 		}
 	}
 
-	float serverTime = Globals::localPlayer->tickBase( ) * g_Interfaces->globalVars->intervalPerTick;
-	float canShoot = Globals::localPlayer->activeWeapon( )->nextPrimaryAttack( ) <= serverTime;
+	float serverTime = Globals::localPlayer->tickBase() * g_Interfaces->globalVars->intervalPerTick;
+	float canShoot = Globals::localPlayer->activeWeapon()->nextPrimaryAttack() <= serverTime;
 
-	if ( canShoot && ( Globals::oCmd->buttons & IN_ATTACK ) ) {
+	if (canShoot && (Globals::oCmd->buttons & IN_ATTACK)) {
 		Globals::desyncEnabledSpecialChecks = false;
 		return;
 	}
 
 	/* dont blame me, this shit is so we can feel the 180z experience(lol) even when freestanding :sunglasses: */
 
-	if ( Globals::bSendPacket )
+	if (Globals::bSendPacket)
 	{
 		Switch = !Switch;
 	}
 
-	pitch( userCmd );
-	yaw( userCmd );
+	pitch(userCmd);
 
-	desync_initialize( userCmd );
+	//yaw(userCmd);
+
+	if (config->get_int("aaDesync"))
+		desync_initialize(userCmd);
+	else
+		yaw(userCmd);
 }
 
 void CAntiAim::pitch(CUserCmd* pCmd)
 {
-	if (config_system.item.misc.anti_untrusted) // anti-untrusted
+	if (config->get_bool("miscAntiUT")) // anti-untrusted
 	{
 		if (IsStandingCheck(pCmd))
 		{ // standing
-			switch (config_system.item.antiaim.standing_pitch)
+			switch (config->get_int("aaStandingPitch"))
 			{
 			case 1: pitch_down(pCmd); break;
 			case 2: pitch_up(pCmd); break;
@@ -114,7 +118,7 @@ void CAntiAim::pitch(CUserCmd* pCmd)
 		}
 		else if (IsMovingCheck(pCmd))
 		{ // moving
-			switch (config_system.item.antiaim.moving_pitch)
+			switch (config->get_int("aaMovingPitch"))
 			{
 			case 1: pitch_down(pCmd); break;
 			case 2: pitch_up(pCmd); break;
@@ -124,7 +128,7 @@ void CAntiAim::pitch(CUserCmd* pCmd)
 		}
 		else if (IsInAirCheck(pCmd))
 		{ // in-air
-			switch (config_system.item.antiaim.inair_pitch)
+			switch (config->get_int("aaInAirPitch"))
 			{
 			case 1: pitch_down(pCmd); break;
 			case 2: pitch_up(pCmd); break;
@@ -147,7 +151,7 @@ void CAntiAim::pitch(CUserCmd* pCmd)
 	{
 		if (IsStandingCheck(pCmd))
 		{ // standing
-			switch (config_system.item.antiaim.standing_pitch)
+			switch (config->get_int("aaStandingPitch"))
 			{
 			case 1: pitch_fake_down(pCmd); break;
 			case 2: pitch_fake_up(pCmd); break;
@@ -157,7 +161,7 @@ void CAntiAim::pitch(CUserCmd* pCmd)
 		}
 		else if (IsMovingCheck(pCmd))
 		{ // moving
-			switch (config_system.item.antiaim.moving_pitch)
+			switch (config->get_int("aaMovingPitch"))
 			{
 			case 1: pitch_fake_down(pCmd); break;
 			case 2: pitch_fake_up(pCmd); break;
@@ -167,7 +171,7 @@ void CAntiAim::pitch(CUserCmd* pCmd)
 		}
 		else if (IsInAirCheck(pCmd))
 		{ // in-air
-			switch (config_system.item.antiaim.inair_pitch)
+			switch (config->get_int("aaInAirPitch"))
 			{
 			case 1: pitch_fake_down(pCmd); break;
 			case 2: pitch_fake_up(pCmd); break;
@@ -192,11 +196,11 @@ void CAntiAim::yaw(CUserCmd* pCmd)
 {
 	if (IsStandingCheck(pCmd))
 	{ // standing
-		if (config_system.item.antiaim.standing_autodirection)
+		if (config->get_bool("aaStandingAutoDir"))
 			yaw_autoDirection(pCmd);
 		else
 		{
-			switch (config_system.item.antiaim.standing_yaw)
+			switch (config->get_int("aaStandingYaw"))
 			{
 			case 0: { } break;
 			case 1: { yaw_backwards(pCmd); } break;
@@ -204,36 +208,36 @@ void CAntiAim::yaw(CUserCmd* pCmd)
 			}
 		}
 
-		if (config_system.item.antiaim.standing_jitter_type == 1)
-			pCmd->viewAngles.y += rand() % (int)config_system.item.antiaim.standing_jitter_range; // jitter
-		else if (config_system.item.antiaim.standing_jitter_type == 2)
+		if (config->get_int("aaStandingJitterType") == 1)
+			pCmd->viewAngles.y += rand() % (int)config->get_int("aaStandingJitterRange"); // jitter
+		else if (config->get_int("aaStandingJitterType") == 2)
 			pCmd->viewAngles.y += rand() % 179 + 1; // jitter
 	}
 	if (IsMovingCheck(pCmd))
 	{ // moving
-		if (config_system.item.antiaim.moving_autodirection)
+		if (config->get_bool("aaMovingAutoDir"))
 			yaw_autoDirection(pCmd);
 		else
 		{
-			switch (config_system.item.antiaim.moving_yaw)
+			switch (config->get_int("aaMovingYaw"))
 			{
 			case 0: { } break;
 			case 1: { yaw_backwards(pCmd); } break;
 			case 2: { yaw_sideways(pCmd); } break;
 			}
 		}
-		if (config_system.item.antiaim.moving_jitter_type == 1)
-			pCmd->viewAngles.y += rand() % (int)config_system.item.antiaim.moving_jitter_range; // jitter
-		else if (config_system.item.antiaim.moving_jitter_type == 2)
+		if (config->get_int("aaMovingJitterType") == 1)
+			pCmd->viewAngles.y += rand() % (int)config->get_int("aaMovingJitterRange"); // jitter
+		else if (config->get_int("aaMovingJitterType") == 2)
 			pCmd->viewAngles.y += rand() % 179 + 1; // jitter
 	}
 	if (IsInAirCheck(pCmd))
 	{ // in-air
-		if (config_system.item.antiaim.inair_autodirection)
+		if (config->get_bool("aaInAirAutoDir"))
 			yaw_autoDirection(pCmd);
 		else
 		{
-			switch (config_system.item.antiaim.inair_yaw)
+			switch (config->get_int("aaInAirYaw"))
 			{
 			case 0: { } break;
 			case 1: { yaw_backwards(pCmd); } break;
@@ -241,9 +245,9 @@ void CAntiAim::yaw(CUserCmd* pCmd)
 			}
 		}
 
-		if (config_system.item.antiaim.inair_jitter_type == 1)
-			pCmd->viewAngles.y += rand() % (int)config_system.item.antiaim.inair_jitter_range; // jitter
-		else if (config_system.item.antiaim.inair_jitter_type == 2)
+		if (config->get_int("aaInAirJitterType") == 1)
+			pCmd->viewAngles.y += rand() % (int)config->get_int("aaInAirJitterRange"); // jitter
+		else if (config->get_int("aaInAirJitterType") == 2)
 			pCmd->viewAngles.y += rand() % 179 + 1; // jitter
 	}
 	/*else
@@ -413,7 +417,7 @@ void CAntiAim::yaw_backwards(CUserCmd* cmd)
 
 void CAntiAim::yaw_sideways(CUserCmd* cmd)
 {
-	if (GetAsyncKeyState(config_system.item.config.bind_antiaimflip_key))
+	if (menu->get_hotkey("aaFlipKey"))
 		cmd->viewAngles.y += 90;
 	else
 		cmd->viewAngles.y -=  90;
@@ -569,64 +573,50 @@ int m_iJitter = 0;
 void CAntiAim::desync_initialize(CUserCmd* cmd)
 {
 	// if ( Globals::localPlayer->animState( ) && Globals::bSendPacket && g_Interfaces->clientState->ChokedCommands )
-	if (Globals::localPlayer->animState())
-	{
-		switch (config_system.item.antiaim.desync_type)
-		{
-		case 0:
-		{ }
-		break;
-		case 1:
-		{
-			if (Globals::localPlayer->animState())
-			{
-				//float desync = Globals::localPlayer->calculateDesyncValue();
-				float desync = 58;
-				float balance = 1.0f;
+	if (config->get_bool("aaDesync")) {
+		/*float desync = Globals::localPlayer->calculateDesyncDelta();
+		float balance = 1.0f;
 
-				int type = 2;
-				if (type == 2)
-					balance = -1.0f;
+		int type = 2;
+		if (type == 2)
+			balance = -1.0f;
 
-				if (g_Interfaces->globalVars->curtime <= next_lby_update(cmd->viewAngles.y, cmd)) {
+		if (g_Interfaces->globalVars->curtime <= next_lby_update(cmd->viewAngles.y, cmd)) {
 
-					auto net_channel = g_Interfaces->gameEngine->getNetChannel();
+			auto net_channel = g_Interfaces->gameEngine->getNetChannel();
 
-					if (!net_channel)
-						return;
+			if (!net_channel)
+				return;
 
-					if (net_channel->m_nChokedPackets >= 2) {
-						cmd->viewAngles.y = g_Math.normalizeYaw(cmd->viewAngles.y);
-						return;
-					}
-
-					if (type == 1)
-						cmd->viewAngles.y -= 100.0f;
-					else
-						cmd->viewAngles.y += (balance * 120.0f);
-				}
-				else if (type != 1) {
-					cmd->viewAngles.y -= (desync + 30.0f) * balance;
-				}
+			if (net_channel->m_nChokedPackets >= 10) {
+				cmd->viewAngles.y = g_Math.normalizeYaw(cmd->viewAngles.y);
+				return;
 			}
-			//cmd->viewAngles.y = BalanceDumpedFromPolak(cmd, 1); //balance
+			if (type == 1)
+				cmd->viewAngles.y -= 180.0f;
+			else
+				cmd->viewAngles.y += (balance * 60.0f);
 		}
-		break;
-		case 2:
-		{
-			int jitter_side = 1;
 
+		else if (type != 1) {
+			int jitter_side = 1;
 			cmd->viewAngles.y += 180.0f;
 
-			//float desync = Globals::localPlayer->calculateDesyncValue();
-			float desync = 58;
-			float lby_delta = 180.0f - desync + 10.0f;
-			float desync_length = 180.0f - lby_delta * 0.5f;
-			float jitter = 90.0f * jitter_side;
+			float desync = Globals::localPlayer->calculateDesyncDelta();
+			float lby_delta = 60.0f - desync + 58.0f;
+			float desync_length = 60.0f - lby_delta * 60.0f;
+			float jitter = 60.0f * jitter_side;
+			auto net_channel = g_Interfaces->gameEngine->getNetChannel();
 
-
+			if (!net_channel)
+				return;
+			if (net_channel->m_nChokedPackets >= 10) {
+				cmd->viewAngles.y = g_Math.normalizeYaw(cmd->viewAngles.y);
+				return;
+			}
 			if (jitter_side == 1)
 				cmd->viewAngles.y += desync_length;
+
 			else if (jitter_side == -1)
 				cmd->viewAngles.y -= desync_length;
 
@@ -645,138 +635,23 @@ void CAntiAim::desync_initialize(CUserCmd* cmd)
 					if (jitter_side == 1)
 						cmd->viewAngles.y += lby_delta;
 					else
-						cmd->viewAngles.y += desync - 190.0f;
+						cmd->viewAngles.y += desync - 68;
 				}
 			}
 			else {
 				if (jitter_side == 1)
-					cmd->viewAngles.y += desync - 190.0;
+					cmd->viewAngles.y += desync - 68;
 				else
 					cmd->viewAngles.y += lby_delta;
-				Globals::bSendPacket = true;
+				Globals::bSendPacket = false;
 			}
 
 			if (++m_iJitter >= 3)
 				m_iJitter = 0;
 
 			cmd->viewAngles.y = g_Math.normalizeYaw(cmd->viewAngles.y);
-			//cmd->viewAngles.y = BalanceDumpedFromPolak(cmd, 2); //stretch
 		}
-		break;
-		case 3:
-		{
-			if (Globals::localPlayer->animState())
-			{
-				float desync = Globals::localPlayer->calculateDesyncValue();
-				float balance = 1.0f;
-
-				int type = 2;
-				if (type == 2)
-					balance = -1.0f;
-
-				if (g_Interfaces->globalVars->curtime <= next_lby_update(Globals::oCmd->viewAngles.y, Globals::oCmd)) {
-
-					auto net_channel = g_Interfaces->gameEngine->getNetChannel();
-
-					if (!net_channel)
-						return;
-
-					if (net_channel->m_nChokedPackets >= 2) {
-						Globals::oCmd->viewAngles.y = g_Math.normalizeYaw(Globals::oCmd->viewAngles.y);
-						return;
-					}
-
-					if (type == 1)
-						Globals::oCmd->viewAngles.y -= 100.0f;
-					else
-						Globals::oCmd->viewAngles.y += (balance * 120.0f);
-				}
-				else if (type != 1) {
-					Globals::oCmd->viewAngles.y -= (desync + 30.0f) * balance;
-				}
-			}
-			//cmd->viewAngles.y = BalanceDumpedFromPolak(cmd, 1); //balance
-		}
-		break;
-		case 4:
-		{
-			int jitter_side = 1;
-
-			Globals::oCmd->viewAngles.y += 180.0f;
-
-			float desync = Globals::localPlayer->calculateDesyncValue();
-			float lby_delta = 180.0f - desync + 10.0f;
-			float desync_length = 180.0f - lby_delta * 0.5f;
-			float jitter = 90.0f * jitter_side;
-
-
-			if (jitter_side == 1)
-				Globals::oCmd->viewAngles.y += desync_length;
-			else if (jitter_side == -1)
-				Globals::oCmd->viewAngles.y -= desync_length;
-
-
-			int v19 = 0;
-			if (g_Interfaces->globalVars->curtime < g_Interfaces->globalVars->curtime <= next_lby_update(Globals::oCmd->viewAngles.y, Globals::oCmd)) {
-				v19 = m_iJitter;
-			}
-			else {
-				m_iJitter = 0;
-			}
-
-			int v20 = v19 - 1;
-			if (v20) {
-				if (v20 == 1) {
-					if (jitter_side == 1)
-						Globals::oCmd->viewAngles.y += lby_delta;
-					else
-						Globals::oCmd->viewAngles.y += desync - 190.0f;
-				}
-			}
-			else {
-				if (jitter_side == 1)
-					Globals::oCmd->viewAngles.y += desync - 190.0;
-				else
-					Globals::oCmd->viewAngles.y += lby_delta;
-				Globals::bSendPacket = true;
-			}
-
-			if (++m_iJitter >= 3)
-				m_iJitter = 0;
-
-			Globals::oCmd->viewAngles.y = g_Math.normalizeYaw(Globals::oCmd->viewAngles.y);
-			//cmd->viewAngles.y = BalanceDumpedFromPolak(cmd, 2); //stretch
-		}
-		break;
-		/*case 3:
-		{
-			//jitter
-			if ((cmd->viewAngles.y - dget_fixed_feet_yaw()) < dmax_desync_angle())
-				cmd->viewAngles.y = 180;
-			else
-				cmd->viewAngles.y = dmax_desync_angle();
-		}
-		break;
-		case 3:
-			desync_stretch(cmd);
-			break;
-		case 4:
-			desync_crooked(cmd);
-			break;
-		case 5:
-			desync_auto(cmd);//desync_spin(cmd);
-			break;
-		case 6:
-			desync_jitter(cmd);
-			break;
-		case 7:
-			desync_static(cmd);
-			break;
-		case 8:
-			desync_switch(cmd);
-			break;*/
-		}
-	}
+	}*/
 }
 
 /*

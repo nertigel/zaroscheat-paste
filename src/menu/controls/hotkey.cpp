@@ -4,7 +4,7 @@
 #include <windows.h>
 
 #include "hotkey.hpp"
-/*
+
 const char* keys[ ] = {
 "[-]", "[M1]", "[M2]", "[BRK]", "[M3]", "[M4]", "[M5]",
 "[-]", "[BSPC]", "[TAB]", "[-]", "[-]", "[-]", "[ENTER]",
@@ -168,4 +168,3 @@ void c_hotkey::draw( ) {
 		}
 	}
 }
-*/

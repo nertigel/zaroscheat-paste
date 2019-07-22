@@ -1,5 +1,5 @@
 #include "multicombo.hpp"
-/*
+
 std::string construct_label( const std::vector<std::string> &items, int value ) {
 	if ( value == 0 )
 		return "-";
@@ -122,4 +122,3 @@ void c_multicombo::draw( ) {
 		}
 	}
 }
-*/

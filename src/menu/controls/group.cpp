@@ -1,5 +1,5 @@
 #include "group.hpp"
-/*
+
 Vector2 c_group::get_cursor_pos( ) {
 	return this->cursor_pos;
 }
@@ -82,4 +82,3 @@ void c_group::add_child( c_element *child ) {
 Vector2 c_group::get_child_draw_position( ) {
 	return this->get_parent( )->get_child_draw_position( ) + this->position + Vector2( 16, 20 + this->scroll );
 }
-*/

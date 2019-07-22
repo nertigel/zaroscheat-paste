@@ -1,5 +1,5 @@
 #include "button.hpp"
-/*
+
 c_button::c_button( const std::string &label, std::function< void( ) > callback, const Vector2 &size ) {
 	this->label = std::move( label );
 	this->var_name = std::move( var_name );
@@ -56,4 +56,3 @@ void c_button::draw( ) {
 	g_renderer_d3d->menu_bold->draw_text( get_label( ), item_min + ( button_size / 2 ) - ( label_size / 2 ), Color( 255, 255, 255 ),
 		font_flags_d3d::font_dropshadow );
 }
-*/

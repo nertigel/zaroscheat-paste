@@ -1,5 +1,5 @@
 #include "tab.hpp"
-/*
+
 Vector2 c_tab::get_cursor_pos( ) {
 	return this->cursor_pos;
 }
@@ -38,4 +38,3 @@ void c_tab::add_child( c_element *child ) {
 Vector2 c_tab::get_child_draw_position( ) {
 	return c_element::get_child_draw_position( );
 }
-*/

@@ -143,7 +143,7 @@ bool CGrenadePrediction::detonated( CBaseCombatWeapon *weapon, float time, CGame
 }
 
 void CGrenadePrediction::think( CUserCmd *ucmd ) {
-	if ( !config_system.item.visuals.grenade_prediction )
+	if ( !config->get_bool( "espGrenadePred" ) )
 		return;
 
 	if ( !( ucmd->buttons & IN_ATTACK ) && !( ucmd->buttons & IN_ATTACK2 ) ) {
@@ -175,7 +175,7 @@ void CGrenadePrediction::think( CUserCmd *ucmd ) {
 }
 
 void CGrenadePrediction::draw( ) {	
-	if ( !config_system.item.visuals.grenade_prediction )
+	if ( !config->get_bool( "espGrenadePred" ) )
 		return;
 
 	if ( !g_Interfaces->gameEngine->inGame( ) || !Globals::localPlayer || !Globals::localPlayer->alive( ) )
@@ -194,17 +194,13 @@ void CGrenadePrediction::draw( ) {
 		for ( float a = 0; a < PI * 2.0f; a += step ) {
 			Vector3 start( radius * cosf( a ) + position.x, radius * sinf( a ) + position.y, position.z );
 
-			int red = config_system.item.visuals.clr_grenade_prediction[0];
-			int green = config_system.item.visuals.clr_grenade_prediction[1];
-			int blue = config_system.item.visuals.clr_grenade_prediction[2];
-
 			Vector3 start2d;
 			if ( g_Interfaces->debugOverlay->WorldToScreen( start, start2d ) )
 				g_Renderer->line( start2d.x, start2d.y, start2d.x + 1, start2d.y + 1,
 					Color(
-						red,
-						green, 
-						blue, 
+						config->get_color("colorGrenadePred").r(),
+						config->get_color("colorGrenadePred").g(),
+						config->get_color("colorGrenadePred").b(),
 						( int )alpha ) );
 		}
 	};
@@ -220,10 +216,7 @@ void CGrenadePrediction::draw( ) {
 
 			if ( g_Interfaces->debugOverlay->WorldToScreen( p.m_start, start ) && g_Interfaces->debugOverlay->WorldToScreen( p.m_end, end ) ) {
 				//	draw line 
-				int red = config_system.item.visuals.clr_grenade_prediction[0];
-				int green = config_system.item.visuals.clr_grenade_prediction[1];
-				int blue = config_system.item.visuals.clr_grenade_prediction[2];
-				g_Renderer->line( start.x, start.y, end.x, end.y, Color(red, green, blue) );
+				g_Renderer->line( start.x, start.y, end.x, end.y, config->get_color( "colorGrenadePred" ) );
 
 				//	draw small box if detonated or hit a wall 
 				if ( p.m_detonate || p.m_plane ) {

@@ -1,6 +1,6 @@
 #pragma once
 #include "../menu.hpp"
-/*
+
 class c_button : public c_element {
 private:
 	std::function< void( ) > callback;
@@ -13,4 +13,3 @@ public:
 	void draw( ) override;
 
 };
-*/

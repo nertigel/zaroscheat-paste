@@ -72,7 +72,7 @@ void __fastcall CHookManager::onFrameStage( void *ecx, void *edx, clientFrameSta
 				for ( int j = 0; j < map->m_nInterpolatedEntries; ++j )
 				{
 
-					map->m_Entries[ j ].m_bNeedsToInterpolate = !config_system.item.ragebot.backtrack;
+					map->m_Entries[ j ].m_bNeedsToInterpolate = !config->get_bool("rageBacktrack");
 				}
 			}
 		}

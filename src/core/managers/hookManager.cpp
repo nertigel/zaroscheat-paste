@@ -50,26 +50,13 @@ void CHookManager::initialize( )
 	this->materialHook->swapFunction( 42, CHookManager::beginFrame );
 	this->modelRenderHook->swapFunction( 21, CHookManager::drawModelExecute );
 
-	//present_fn original_present;
-
 	//this->gameEventHook->swapFunction(9, CHookManager::fireEventClientSide);
 
 	g_Interfaces->cvar->FindVar( "mat_postprocess_enable" )->SetValue( 0 );
 
-	//present_address = utilities::pattern_scan(GetModuleHandleW(L"gameoverlayrenderer.dll"), "FF 15 ? ? ? ? 8B F8 85 DB") + 0x2;
-	//reset_address = utilities::pattern_scan(GetModuleHandleW(L"gameoverlayrenderer.dll"), "FF 15 ? ? ? ? 8B F8 85 FF 78 18") + 0x2;
-	present_address = g_Memory->pattern_scan(GetModuleHandleW(L"gameoverlayrenderer.dll"), "FF 15 ? ? ? ? 8B F8 85 DB") + 0x2;
-	reset_address = g_Memory->pattern_scan(GetModuleHandleW(L"gameoverlayrenderer.dll"), "FF 15 ? ? ? ? 8B F8 85 FF 78 18") + 0x2;
+	Globals::csgoWindow = FindWindow("Valve001", NULL);
 
-	original_present = **reinterpret_cast<present_fn * *>(present_address);
-	original_reset = **reinterpret_cast<reset_fn * *>(reset_address);
-
-	**reinterpret_cast<void***>(present_address) = reinterpret_cast<void*>(&present);
-	**reinterpret_cast<void***>(reset_address) = reinterpret_cast<void*>(&reset);
-
-	Globals::csgoWindow = FindWindow( "Valve001", NULL );
-
-	Globals::wndProcOrig = ( WNDPROC )SetWindowLongPtrA( Globals::csgoWindow, GWL_WNDPROC, ( LONG )windowProcedure );
+	Globals::wndProcOrig = (WNDPROC)SetWindowLongPtrA(Globals::csgoWindow, GWL_WNDPROC, (LONG)windowProcedure);
 }
 
 void CHookManager::shutdown( )
@@ -100,66 +87,29 @@ void CHookManager::shutdown( )
 
 CHookManager* g_Hooks = new CHookManager( );
 
-#include "../../utilities/includes.h"
-
-extern LRESULT ImGui_ImplDX9_WndProcHandler(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
-
-LRESULT __stdcall windowProcedure( HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam ) {
-	if ( GetForegroundWindow( ) != Globals::csgoWindow ) {
-		menu.opened = false;
-		return CallWindowProcA( Globals::wndProcOrig, hwnd, message, wparam, lparam );
+LRESULT __stdcall windowProcedure(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
+	if (GetForegroundWindow() != Globals::csgoWindow) {
+		menu->opened = false;
+		return CallWindowProcA(Globals::wndProcOrig, hwnd, message, wparam, lparam);
 	}
 
 	// hahahahahahhahhahahahahahahahahhahaha using getasynckeystate in wndproc hahahahahahahahahahhahaha ~alpha
 	static bool pressed = false;
-	if ( !pressed && GetAsyncKeyState(VK_INSERT)) {
+	if (!pressed && GetAsyncKeyState(VK_INSERT)) {
 		pressed = true;
 	}
-	else if ( pressed && !GetAsyncKeyState(VK_INSERT) ) {
+	else if (pressed && !GetAsyncKeyState(VK_INSERT)) {
 		pressed = false;
 
-		menu.opened = !menu.opened;
+		menu->opened = !menu->opened;
 	}
 
-	if (menu.opened && ImGui_ImplDX9_WndProcHandler(hwnd, message, wparam, lparam))
-		return true;
-
-	/*if ( menu.opened ) {
-		if ( message == WM_MOUSEWHEEL )
-			menu.set_mouse_wheel( GET_WHEEL_DELTA_WPARAM( wparam ) / WHEEL_DELTA );
+	if (menu->opened) {
+		if (message == WM_MOUSEWHEEL)
+			menu->set_mouse_wheel(GET_WHEEL_DELTA_WPARAM(wparam) / WHEEL_DELTA);
 
 		return false;
-	}*/
-
-	return CallWindowProcA( Globals::wndProcOrig, hwnd, message, wparam, lparam );
-}
-
-static bool initialized = false;
-long __stdcall CHookManager::present(IDirect3DDevice9* device, RECT* source_rect, RECT* dest_rect, HWND dest_window_override, RGNDATA* dirty_region) {
-	if (!initialized) {
-		menu.apply_fonts();
-		menu.setup_resent(device);
-		initialized = true;
-	}
-	if (initialized) {
-		menu.pre_render(device);
-		menu.post_render();
-
-		menu.run_popup();
-		menu.run();
-		menu.end_present(device);
 	}
 
-	return original_present(device, source_rect, dest_rect, dest_window_override, dirty_region);
-}
-
-long __stdcall CHookManager::reset(IDirect3DDevice9* device, D3DPRESENT_PARAMETERS* present_parameters) {
-	if (!initialized)
-		original_reset(device, present_parameters);
-
-	menu.invalidate_objects();
-	long hr = original_reset(device, present_parameters);
-	menu.create_objects(device);
-
-	return hr;
+	return CallWindowProcA(Globals::wndProcOrig, hwnd, message, wparam, lparam);
 }

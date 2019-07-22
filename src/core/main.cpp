@@ -66,12 +66,12 @@ void initializeCheat( void *modulePtr )
 	g_Renderer->initialize( ( LPDIRECT3DDEVICE9 )g_Interfaces->dx9Device );
 	g_Renderer->useSurface( );
 
-	//setup->setup( );
+	setup->setup( );
 	g_Hooks->initialize( );
 
 	g_Interfaces->gameUI->messageBox( "Dopamine", "Successfully loaded! Make sure Multisampling Anti-Aliasing Mode is OFF!" );
 
-	while ( !config_system.item.config.unload_cheat )
+	while ( !config->get_bool("unload"))
 		std::this_thread::sleep_for( std::chrono::milliseconds( 100 ) );
 
 	g_Interfaces->inputSystem->enableInput( true );

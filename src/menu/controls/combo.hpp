@@ -1,6 +1,6 @@
 #pragma once
 #include "../menu.hpp"
-/*
+
 class c_combo : public c_element {
 private:
 	std::vector<std::string> items;
@@ -12,4 +12,3 @@ public:
 	void draw( ) override;
 
 };
-*/

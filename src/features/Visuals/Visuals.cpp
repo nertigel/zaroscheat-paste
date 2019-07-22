@@ -35,7 +35,7 @@ void CVisuals::onFrameStage( clientFrameStage_t frameStage )
 
 void CVisuals::onPaint( unsigned int panel )
 {
-	if ( config_system.item.visuals.modulation_night )
+	if (config->get_int("worldModulation") & (1 << 1))
 	{
 		bNightModulationRemoveComplete = false;
 		nightModulation( );
@@ -46,7 +46,7 @@ void CVisuals::onPaint( unsigned int panel )
 		removeNight( );
 	}
 
-	if ( config_system.item.visuals.modulation_fullbright )
+	if (config->get_int("worldModulation") & (1 << 2))
 	{
 		bFullBrightRemoveComplete = false;
 		applyFullBright( );
@@ -64,10 +64,10 @@ void CVisuals::onPaint( unsigned int panel )
 	//localViewModelSpoof( );
 
 
-	if ( config_system.item.visuals.removals_scope && Globals::localPlayer->scoped( ) )
+	if ( config->get_bool( "espRemovalsScope" ) && Globals::localPlayer->scoped( ) )
 		noScopeLines( );
 
-	if ( !config_system.item.visuals.enable_visuals )
+	if ( !config->get_bool( "espEnable" ) )
 		return;
 
 	const float arrowFade = 1.1f * g_Interfaces->globalVars->frametime;
@@ -112,42 +112,37 @@ void CVisuals::onPaint( unsigned int panel )
 			if ( alpha[ i ] > ( pEntity->immunity( ) ? 130 : 240 ) )
 				alpha[ i ] = ( pEntity->immunity( ) ? 130 : 240 );
 
-			if ( alpha[ i ] < ( ( config_system.item.visuals.dormant_check && Globals::shouldDormant ) ? 50 : 0 ) )
-				alpha[ i ] = ( config_system.item.visuals.dormant_check && Globals::shouldDormant ) ? 50 : 0;
+			if ( alpha[ i ] < ( ( config->get_bool( "espDormant" ) && Globals::shouldDormant ) ? 50 : 0 ) )
+				alpha[ i ] = ( config->get_bool( "espDormant" ) && Globals::shouldDormant ) ? 50 : 0;
 
-			if ( config_system.item.visuals.player_box )
+			if ( config->get_bool( "espBox" ) )
 				playerBox( pEntity );
 
-
-			if ( config_system.item.visuals.player_health )
+			if ( config->get_bool( "espHealth" ) )
 				playerHealth( pEntity );
 
-
-			if ( config_system.item.visuals.player_name )
+			if ( config->get_bool( "espName" ) )
 				playerName( pEntity, i );
 
-
-			if ( config_system.item.visuals.player_ammo )
+			if ( config->get_bool( "espWeaponAmmoBar" ) )
 				playerAmmo( pEntity );
 
-
-			//if (config->get_int("espFlags") & (1 << 1))
-
-			playerFlags( pEntity );
+			if (config->get_bool("espFlagsEnable"))
+				playerFlags( pEntity );
 
 			playerWeapon( pEntity );
 		}
 
 
-		if ( config_system.item.visuals.out_of_fov_arrow )
+		if ( config->get_bool( "espOffscreen" ) )
 			outOfPovArrows( pEntity );
 
 		if ( !pEntity->IsDormant( ) )
 		{
-			if ( config_system.item.visuals.skeleton )
+			if ( config->get_bool( "espSkeleton" ) )
 				playerBones(pEntity);
 
-			if ( config_system.item.visuals.backtrack_skeleton && Globals::localPlayer->alive( ) )
+			if ( config->get_bool( "espSkeletonBT" ) && Globals::localPlayer->alive( ) )
 				playerHistoryBones( pEntity );
 		}
 	}
@@ -186,13 +181,10 @@ bool CVisuals::boundingBox( CBaseEntity* pEntity, Vector3 offset )
 
 void CVisuals::playerBox( CBaseEntity* pEntity )
 {
-	int red = config_system.item.visuals.clr_box[0] * 255;
-	int green = config_system.item.visuals.clr_box[1] * 255;
-	int blue = config_system.item.visuals.clr_box[2] * 255;
 	Color CasualCol = Color(
-		red,
-		green,
-		blue,
+		config->get_color("colorBox").r(),
+		config->get_color("colorBox").g(),
+		config->get_color("colorBox").b(),
 		alpha[ pEntity->EntIndex( ) ] );
 
 	g_Renderer->rectangle( Box.x, Box.y, Box.w, Box.h, CasualCol );
@@ -202,7 +194,7 @@ void CVisuals::playerBox( CBaseEntity* pEntity )
 
 void CVisuals::playerHealth( CBaseEntity* pEntity )
 {
-	int health = pEntity->health( ) > 100 ? 100 : pEntity->health( );
+	int health = pEntity->health( ) > 100 ? 100 : pEntity->health( ); // some servers give you more then 100 hp
 
 	if ( health <= 0 )
 		return;
@@ -215,7 +207,7 @@ void CVisuals::playerHealth( CBaseEntity* pEntity )
 	g_Renderer->fillRectangle( Box.x - 6, Box.y + offset, 2, barHeight, Color( 120, min( 170, pEntity->health( ) * 95 / 50 ), 0, alpha[ pEntity->EntIndex( ) ] ) );
 
 
-	if ( health <= 95 && config_system.item.visuals.player_health_text )
+	if ( health <= 95 && config->get_bool("espHealthText"))
 	{
 		std::string strHealth( std::to_string( health ) );
 
@@ -231,13 +223,10 @@ void CVisuals::playerName( CBaseEntity* pEntity, int index )
 	g_Interfaces->gameEngine->getPlayerInfo( index, &playerInfo );
 
 	auto strPlayerName = playerInfo.name;
-	int red = config_system.item.visuals.clr_name[0] * 255;
-	int green = config_system.item.visuals.clr_name[1] * 255;
-	int blue = config_system.item.visuals.clr_name[2] * 255;
 	Color CasualCol = Color(
-		red,
-		green,
-		blue,
+		config->get_color("colorName").r(),
+		config->get_color("colorName").g(),
+		config->get_color("colorName").b(),
 		alpha[ pEntity->EntIndex( ) ] );
 
 	g_Renderer->text( Box.x + ( Box.w / 2 ), Box.y - 13, getFont( g_Fonts->visuals ), strPlayerName, CasualCol, true );
@@ -257,37 +246,34 @@ void CVisuals::playerWeapon( CBaseEntity* pEntity )
 	std::transform( strWeaponName.begin( ), strWeaponName.end( ), strWeaponName.begin( ), ::toupper );
 
 
-	if ( config_system.item.visuals.player_ammo && ( !weapon->isKnife( ) || !weapon->isKnifeorNade( ) ) )
+	if ( config->get_bool( "espWeaponAmmo" ) && ( !weapon->isKnife( ) || !weapon->isKnifeorNade( ) ) )
 		strWeaponName.append( " (" ).append( std::to_string( weapon->ammo( ) ) ).append( " / " + std::to_string( weapon->weaponData( )->maxClip ) + ")" );
 
 	int offset;
 
-	if ( config_system.item.visuals.player_ammo_bar )
+	if ( config->get_bool( "espWeaponAmmoBar" ) )
 		offset = 9;
 	else
 		offset = 1;
 
-	int red = config_system.item.visuals.clr_weapon_icon[0] * 255;
-	int green = config_system.item.visuals.clr_weapon_icon[1] * 255;
-	int blue = config_system.item.visuals.clr_weapon_icon[2] * 255;
 	Color CasualCol = Color(
-		red,
-		green,
-		blue,
+		config->get_color("colorWeapon").r(),
+		config->get_color("colorWeapon").g(),
+		config->get_color("colorWeapon").b(),
 		alpha[pEntity->EntIndex()]);
 
 	unsigned int font = getFont( g_Fonts->visualsWeapon );
 
 
-	if ( config_system.item.visuals.player_weapon_text )
+	if ( config->get_bool( "espWeapon" ) )
 		g_Renderer->text( Box.x + ( Box.w / 2 ), Box.y + Box.h + offset - ( font == g_Fonts->visualsAlternate ? 3 : 0 ), getFont( g_Fonts->visualsWeapon ), strWeaponName.c_str( ), Color( 255, 255, 255, alpha[ pEntity->EntIndex( ) ] ), true );
 
 
-	if ( config_system.item.visuals.player_weapon_icon )
+	if ( config->get_bool( "espWeaponIcon" ) )
 	{
-		g_Renderer->text( Box.x + ( Box.w / 2 ), Box.y + Box.h + ( config_system.item.visuals.player_weapon_text ? offset + 4 : offset - 6 ), g_Fonts->visualsWeaponIcon, weaponToIcon( weapon->itemDefenitionIndex( ) ), CasualCol, true );
+		g_Renderer->text( Box.x + ( Box.w / 2 ), Box.y + Box.h + ( config->get_bool( "espWeapon" ) ? offset + 4 : offset - 6 ), g_Fonts->visualsWeaponIcon, weaponToIcon( weapon->itemDefenitionIndex( ) ), CasualCol, true );
 
-		if ( weaponToIcon( weapon->itemDefenitionIndex( ) ) == "" && !config_system.item.visuals.player_weapon_text )
+		if ( weaponToIcon( weapon->itemDefenitionIndex( ) ) == "" && !config->get_bool( "espWeapon" ) )
 		{
 			g_Renderer->text( Box.x + ( Box.w / 2 ), Box.y + Box.h + offset - ( font == g_Fonts->visualsAlternate ? 3 : 0 ), getFont( g_Fonts->visualsWeapon ), strWeaponName.c_str( ), Color( 255, 255, 255, alpha[ pEntity->EntIndex( ) ] ), true );
 		}
@@ -320,13 +306,10 @@ void CVisuals::playerAmmo( CBaseEntity* pEntity )
 			width = ( animationLayer.m_flCycle * Box.w ) / 1.f;
 	}
 
-	int red = config_system.item.visuals.clr_ammo[0] * 255;
-	int green = config_system.item.visuals.clr_ammo[1] * 255;
-	int blue = config_system.item.visuals.clr_ammo[2] * 255;
 	Color CasualCol = Color(
-		red,
-		green,
-		blue,
+		config->get_color("colorAmmoBar").r(),
+		config->get_color("colorAmmoBar").g(),
+		config->get_color("colorAmmoBar").b(),
 		alpha[pEntity->EntIndex()]);
 
 	g_Renderer->rectangle( Box.x - 1, Box.y + Box.h + 3, Box.w + 2, 4, Color( 0, 0, 0, alpha[ pEntity->EntIndex( ) ] ) );
@@ -384,36 +367,26 @@ void CVisuals::playerFlags( CBaseEntity* pEntity )
 
 	bool kevlar = pEntity->armorValue( ) > 0, helmet = pEntity->hasHelmet( );
 
-	if (config_system.item.visuals.player_flags_money)
+	if ( config->get_int( "espFlags" ) & ( 1 << 1 ) )
 		drawFlag("$" + std::to_string(pEntity->m_iAccount()), Color(25, 255, 25, alpha[pEntity->EntIndex()]));
 
-	if (config_system.item.visuals.player_flags_armor && helmet || kevlar)
+	if ( config->get_int( "espFlags" ) & ( 1 << 2 )  && helmet || kevlar)
 		drawFlag( pEntity->armorName(), Color( 255, 255, 255, alpha[ pEntity->EntIndex( ) ] ) );
 		//drawFlag( armor, Color( 255, 255, 255, alpha[ pEntity->EntIndex( ) ] ) );
 
-	if (config_system.item.visuals.player_flags_scoped & ( 1 << 2 ) && pEntity->scoped( ))
+	if ( config->get_int( "espFlags" ) & ( 1 << 3 ) && pEntity->scoped( ))
 		drawFlag( "zoom", Color( 150, 150, 220, alpha[ pEntity->EntIndex( ) ] ) );
 
-	if (config_system.item.visuals.player_flags_defusing && pEntity->defusing())
+	if ( config->get_int( "espFlags" ) & ( 1 << 4 ) && pEntity->defusing())
 		drawFlag( "defusing", Color(255, 255, 255, alpha[pEntity->EntIndex()]));
 
-	if (config_system.item.visuals.player_flags_rescuing && pEntity->rescuing( ))
+	if ( config->get_int( "espFlags" ) & ( 1 << 5 ) && pEntity->rescuing( ))
 		drawFlag( "rescuing", Color( 255, 255, 255, alpha[ pEntity->EntIndex( ) ] ) );
 
-	if (config_system.item.visuals.player_flags_reloading && reload)
+	if ( config->get_int( "espFlags" ) & ( 1 << 6 ) && reload)
 		drawFlag( "reload", Color( 255, 255, 255, alpha[ pEntity->EntIndex( ) ] ) );
 
-	if (config_system.item.visuals.player_flags_c4)
-	{
-
-	}
-
-	if (config_system.item.visuals.player_flags_flashed)
-	{
-
-	}
-
-	if (config_system.item.visuals.player_flags_fakeducking && fakeDuck( ) && pEntity->flags( ) & FL_ONGROUND)
+	if ( config->get_int( "espFlags" ) & ( 1 << 9 ) && fakeDuck( ) && pEntity->flags( ) & FL_ONGROUND) // crash-here
 		drawFlag( "fake-duck", Color( 255, 255, 255, alpha[ pEntity->EntIndex( ) ] ) );
 
 	//drawFlag( Globals::bruteStage[ pEntity->EntIndex( ) ], Color( 255, 255, 255, alpha[ pEntity->EntIndex( ) ] ) );
@@ -462,11 +435,7 @@ void CVisuals::playerHistoryBones( CBaseEntity* pEntity )
 			if ( !g_Interfaces->debugOverlay->WorldToScreen( bonePos2, vBonePos2 ) )
 				continue;
 
-			int red = config_system.item.visuals.clr_backtrack_skeleton[0] * 255;
-			int green = config_system.item.visuals.clr_backtrack_skeleton[1] * 255;
-			int blue = config_system.item.visuals.clr_backtrack_skeleton[2] * 255;
-
-			g_Renderer->line( ( int ) vBonePos1.x, ( int ) vBonePos1.y, ( int ) vBonePos2.x, ( int ) vBonePos2.y, Color( red, green, blue, 255 ) );
+			g_Renderer->line( ( int ) vBonePos1.x, ( int ) vBonePos1.y, ( int ) vBonePos2.x, ( int ) vBonePos2.y, Color( config->get_color( "colorSkeletonBT" ).r( ), config->get_color( "colorSkeletonBT" ).g( ), config->get_color( "colorSkeletonBT" ).b( ), 255 ) );
 		}
 	}
 }
@@ -547,12 +516,7 @@ void CVisuals::worldWeapon( CBaseEntity * pEntity )
 		if ( !info )
 			return;
 
-		int red = config_system.item.visuals.clr_ammo[0] * 255;
-		int green = config_system.item.visuals.clr_ammo[1] * 255;
-		int blue = config_system.item.visuals.clr_ammo[2] * 255;
-		Color WeaponsCol = Color(red, green, blue, 255);
-
-		if ( config_system.item.visuals.droppedweapons_name )
+		if ( config->get_int( "worldWeapon" ) & ( 1 << 1 ) )
 		{
 			const char *name = info->hudName;
 			wchar_t* localised_name = g_Interfaces->localize->Find( name );
@@ -564,7 +528,7 @@ void CVisuals::worldWeapon( CBaseEntity * pEntity )
 			g_Renderer->text( Box.x + ( Box.w / 2 ), Box.y + Box.h - ( font == g_Fonts->visualsAmmoText ? 9 : 11 ), getFont( g_Fonts->visualsAmmoText ), strWeaponName, Color( 255, 255, 255 ), true );
 		}
 
-		if ( config_system.item.visuals.droppedweapons_ammo )
+		if ( config->get_int( "worldWeapon" ) & ( 1 << 2 ) )
 		{
 			const auto ammo = weapon->ammo( );
 			const auto max_ammo = info->maxClip;
@@ -573,9 +537,8 @@ void CVisuals::worldWeapon( CBaseEntity * pEntity )
 			width *= ammo;
 			width /= max_ammo;
 
-
-			g_Renderer->fillRectangle( Box.x - 7, Box.y + Box.h, Box.w + 16, 4, WeaponsCol );
-			g_Renderer->fillRectangle( Box.x - 6, Box.y + Box.h + 1, width, 2, WeaponsCol );
+			g_Renderer->fillRectangle(Box.x - 7, Box.y + Box.h, Box.w + 16, 4, Color(10, 10, 10, 220));
+			g_Renderer->fillRectangle(Box.x - 6, Box.y + Box.h + 1, width, 2, Color(config->get_color("colorWorldWeaponAmmo").r(), config->get_color("colorWorldWeaponAmmo").g(), config->get_color("colorWorldWeaponAmmo").b(), 255));
 		}
 	}
 }
@@ -601,7 +564,8 @@ void CVisuals::noScopeLines( )
 	float x = Width / 2;
 	float y = Height / 2;
 
-	if ( Globals::localPlayer->activeWeapon( )->hasSniperScope( ) )
+	//if ( Globals::localPlayer->activeWeapon( )->hasSniperScope( ) )
+	if (Globals::localPlayer->scoped())
 	{
 		g_Renderer->line( 0, y, Width, y, Color( 0, 0, 0, 255 ) );
 		g_Renderer->line( x, 0, x, Height, Color( 0, 0, 0, 255 ) );
@@ -610,7 +574,7 @@ void CVisuals::noScopeLines( )
 
 void CVisuals::inaccuracyOverlay( )
 {
-	if ( !config_system.item.visuals.inaccuracy_overlay )
+	if ( !config->get_bool( "miscInaccuracyOverlay" ) )
 		return;
 
 	if ( !g_Interfaces->gameEngine->connected( ) && !g_Interfaces->gameEngine->inGame( ) )
@@ -633,15 +597,10 @@ void CVisuals::inaccuracyOverlay( )
 	int width, height;
 	g_Interfaces->gameEngine->getScreenSize( width, height );
 
-	double spreadDistance = ( ( weapon->inaccuracy( ) + weapon->spread( ) ) * 320 ) * ( config_system.item.visuals.inaccuracy_overlay_size / 5.f ); // b1g maths lmao
+	double spreadDistance = ( ( weapon->inaccuracy( ) + weapon->spread( ) ) * 320 ) * ( config->get_float( "miscInaccuracySize" ) / 5.f ); // b1g maths lmao
 	double spreadSize = ( height * 0.002083 ) * ( spreadDistance / 10 );
 
-	int red = config_system.item.visuals.clr_inaccuracy_overlay[0] * 255;
-	int green = config_system.item.visuals.clr_inaccuracy_overlay[1] * 255;
-	int blue = config_system.item.visuals.clr_inaccuracy_overlay[2] * 255;
-	int alpha1 = config_system.item.visuals.clr_inaccuracy_overlay[3] * 255;
-
-	g_renderer_d3d->clircleFilledDualColour( width / 2, height / 2, spreadSize, 0.0f, 1, 100, D3DCOLOR_ARGB( alpha1, red, green, blue ), D3DCOLOR_ARGB( 0, 0, 0, 0 ), g_Interfaces->dx9Device );
+	g_renderer_d3d->clircleFilledDualColour( width / 2, height / 2, spreadSize, 0.0f, 1, 100, D3DCOLOR_ARGB( config->get_color( "colorInnacuracyOutside" ).a( ), config->get_color( "colorInnacuracyOutside" ).r( ), config->get_color( "colorInnacuracyOutside" ).g( ), config->get_color( "colorInnacuracyOutside" ).b( ) ), D3DCOLOR_ARGB( 0, 0, 0, 0 ), g_Interfaces->dx9Device );
 }
 
 void CVisuals::glow( )
@@ -649,8 +608,8 @@ void CVisuals::glow( )
 	if ( !Globals::localPlayer )
 		return;
 
-	if ( !config_system.item.visuals.enable_glow )// && !config->get_bool( "espGlowLocal" ) )
-		return;
+	//if ( !config->get_bool( "espGlow" ) )// && !config->get_bool( "espGlowLocal" ) )
+		//return;
 
 	for ( auto i = 0; i < g_Interfaces->glow->size; i++ )
 	{
@@ -662,47 +621,32 @@ void CVisuals::glow( )
 
 		if ( pEntity->GetClientClass( )->iClassID == 40)
 		{
-			if ( pEntity->team( ) != Globals::localPlayer->team( ) && config_system.item.visuals.glow_enemy) // enemy
+			if ( pEntity->team( ) != Globals::localPlayer->team( ) && config->get_int( "espGlow" ) & ( 1 << 1 ) ) // enemy
 			{
-				int red = config_system.item.visuals.clr_glow[0] * 255;
-				int green = config_system.item.visuals.clr_glow[1] * 255;
-				int blue = config_system.item.visuals.clr_glow[2] * 255;
-				int alpha1 = config_system.item.visuals.clr_glow[3] * 255;
-
-				glowObject->m_flRed = red;
-				glowObject->m_flGreen = green;
-				glowObject->m_flBlue = blue;
-				glowObject->m_flGlowAlpha = alpha1;
+				glowObject->m_flRed = config->get_color( "colorGlow" ).r( ) / 255.0f;
+				glowObject->m_flGreen = config->get_color( "colorGlow" ).g( ) / 255.0f;
+				glowObject->m_flBlue = config->get_color( "colorGlow" ).b( ) / 255.0f;
+				glowObject->m_flGlowAlpha = config->get_color( "colorGlow" ).a( ) / 255.f;
 
 				glowObject->m_bRenderWhenOccluded = true;
 				glowObject->m_bRenderWhenUnoccluded = false;
 			}
-			else if ( pEntity->team( ) == Globals::localPlayer->team( ) && config_system.item.visuals.glow_team) // team
+			else if ( pEntity->team( ) == Globals::localPlayer->team( ) && config->get_int( "espGlow" ) & ( 1 << 2 ) ) // team
 			{
-				int red = config_system.item.visuals.clr_glow_team[0] * 255;
-				int green = config_system.item.visuals.clr_glow_team[1] * 255;
-				int blue = config_system.item.visuals.clr_glow_team[2] * 255;
-				int alpha1 = config_system.item.visuals.clr_glow_team[3] * 255;
-
-				glowObject->m_flRed = red;
-				glowObject->m_flGreen = green;
-				glowObject->m_flBlue = blue;
-				glowObject->m_flGlowAlpha = alpha1;
+				glowObject->m_flRed = config->get_color( "colorGlow" ).r( ) / 255.0f;
+				glowObject->m_flGreen = config->get_color( "colorGlow" ).g( ) / 255.0f;
+				glowObject->m_flBlue = config->get_color( "colorGlow" ).b( ) / 255.0f;
+				glowObject->m_flGlowAlpha = config->get_color( "colorGlow" ).a( ) / 255.f;
 
 				glowObject->m_bRenderWhenOccluded = true;
 				glowObject->m_bRenderWhenUnoccluded = false;
 			}
-			else if ( pEntity == Globals::localPlayer && config_system.item.visuals.glow_local && Globals::inThirdperson && Globals::localPlayer->alive( ) ) // local
+			else if ( pEntity == Globals::localPlayer && config->get_int( "espGlow" ) & ( 1 << 3 ) && Globals::inThirdperson && Globals::localPlayer->alive( ) ) // local
 			{
-				int red = config_system.item.visuals.clr_glow_local[0] * 255;
-				int green = config_system.item.visuals.clr_glow_local[1] * 255;
-				int blue = config_system.item.visuals.clr_glow_local[2] * 255;
-				int alpha1 = config_system.item.visuals.clr_glow_local[3] * 255;
-
-				glowObject->m_flRed = red;
-				glowObject->m_flGreen = green;
-				glowObject->m_flBlue = blue;
-				glowObject->m_flGlowAlpha = alpha1;
+				glowObject->m_flRed = config->get_color( "colorGlow" ).r( ) / 255.0f;
+				glowObject->m_flGreen = config->get_color( "colorGlow" ).g( ) / 255.0f;
+				glowObject->m_flBlue = config->get_color( "colorGlow" ).b( ) / 255.0f;
+				glowObject->m_flGlowAlpha = config->get_color( "colorGlow" ).a( ) / 255.f;
 
 				glowObject->m_bRenderWhenOccluded = true;
 				glowObject->m_bRenderWhenUnoccluded = false;
@@ -745,7 +689,7 @@ void CVisuals::nightModulation( )
 	oldSkyName = g_Interfaces->cvar->FindVar( "sv_skyname" );
 
 
-	float brightness = config_system.item.visuals.modulation_amount / 100.f;
+	float brightness = config->get_float( "nightModeDarkness" ) / 100.f;
 
 	if ( !bNightModulationComplete || oldBrightness != brightness )
 	{
@@ -837,7 +781,7 @@ void CVisuals::applyFullBright( )
 
 	static int oldSetting;
 
-	int curSettings = config_system.item.visuals.modulation_fullbright;
+	int curSettings = config->get_int( "worldModulation" ) & ( 1 << 2 );
 
 	if ( !bFullBrightComplete || oldSetting != curSettings )
 	{
@@ -882,38 +826,38 @@ void CVisuals::removeFullBright( )
 	}
 }
 
-void CVisuals::outOfPovArrows( CBaseEntity* pEntity ) // premium
+void CVisuals::outOfPovArrows(CBaseEntity* pEntity) // premium
 {
 
-	auto isOnScreen = [ ]( Vector3 origin, Vector3& screen ) -> bool
+	auto isOnScreen = [](Vector3 origin, Vector3 & screen) -> bool
 	{
-		if ( !g_Interfaces->debugOverlay->WorldToScreen( origin, screen ) ) return false;
+		if (!g_Interfaces->debugOverlay->WorldToScreen(origin, screen)) return false;
 		int iScreenWidth, iScreenHeight;
-		g_Interfaces->gameEngine->getScreenSize( iScreenWidth, iScreenHeight );
+		g_Interfaces->gameEngine->getScreenSize(iScreenWidth, iScreenHeight);
 		bool xOk = iScreenWidth > screen.x > 0, yOk = iScreenHeight > screen.y > 0;
 		return xOk && yOk;
 	};
 
 	Vector3 screenPos;
-	if ( isOnScreen( pEntity->getHitbox( 2 ), screenPos ) )
+	if (isOnScreen(pEntity->getHitbox(2), screenPos))
 		return;
 
-	if ( pEntity->IsDormant( ) )
+	if (pEntity->IsDormant())
 		return;
 
-	auto rotateArrow = [ ]( std::array< Vector2, 3 >& points, float rotation )->void
+	auto rotateArrow = [](std::array< Vector2, 3 > & points, float rotation)->void
 	{
-		const auto points_center = ( points.at( 0 ) + points.at( 1 ) + points.at( 2 ) ) / 3;
-		for ( auto& point : points )
+		const auto points_center = (points.at(0) + points.at(1) + points.at(2)) / 3;
+		for (auto& point : points)
 		{
 			point -= points_center;
 
 			const auto temp_x = point.x;
 			const auto temp_y = point.y;
 
-			const auto theta = DEG2RAD( rotation );
-			const auto c = cos( theta );
-			const auto s = sin( theta );
+			const auto theta = DEG2RAD(rotation);
+			const auto c = cos(theta);
+			const auto s = sin(theta);
 
 			point.x = temp_x * c - temp_y * s;
 			point.y = temp_x * s + temp_y * c;
@@ -922,129 +866,42 @@ void CVisuals::outOfPovArrows( CBaseEntity* pEntity ) // premium
 		}
 	};
 
-	const int fade = ( int ) ( ( 4 * g_Interfaces->globalVars->frametime ) * 255 );
+	const int fade = (int)((4 * g_Interfaces->globalVars->frametime) * 255);
 
-	int new_alpha = arrow_alpha[ pEntity->index( ) ];
-	new_alpha += pEntity->dormant( ) ? -fade : fade;
-	new_alpha = std::clamp< int >( new_alpha, 0, 200 );
-	arrow_alpha[ pEntity->index( ) ] = new_alpha;
+	int new_alpha = arrow_alpha[pEntity->index()];
+	new_alpha += pEntity->dormant() ? -fade : fade;
+	new_alpha = std::clamp< int >(new_alpha, 0, 200);
+	arrow_alpha[pEntity->index()] = new_alpha;
 
 	Vector3 viewangles;
-	g_Interfaces->gameEngine->getViewAngles( viewangles );
+	g_Interfaces->gameEngine->getViewAngles(viewangles);
 	int width, height;
 
-	g_Interfaces->gameEngine->getScreenSize( width, height );
+	g_Interfaces->gameEngine->getScreenSize(width, height);
 
 	//	const auto screen_center = Vector2( width / 2.f, height / 2.f );
 	//  float division is slower, do this instead:
-	const auto screen_center = Vector2( width * .5f, height * .5f );
+	const auto screen_center = Vector2(width * .5f, height * .5f);
 
-	const auto angle_yaw_rad = DEG2RAD( viewangles.y - g_Math.calcAngle( Globals::localPlayer->eyePosition( ), pEntity->getHitbox( 2 ) ).y - 90 );
+	const auto angle_yaw_rad = DEG2RAD(viewangles.y - g_Math.calcAngle(Globals::localPlayer->eyePosition(), pEntity->getHitbox(2)).y - 90);
 
-	int radius = max( 10, config_system.item.visuals.out_of_fov_arrow_radius );
-	int size = max( 5, config_system.item.visuals.out_of_fov_arrow_size );
+	int size = max(5, config->get_int("espOffscreenSize", 5));
+	int radius = max(10, config->get_int("espOffscreenRadius", 10));
 
-	const auto new_point_x = screen_center.x + ( ( ( ( width - ( size * 3 ) ) * .5f ) * ( radius / 100.0f ) ) * cos( angle_yaw_rad ) ) + ( int ) ( 6.0f * ( ( ( float ) size - 4.f ) / 16.0f ) );
-	const auto new_point_y = screen_center.y + ( ( ( ( height - ( size * 3 ) ) * .5f ) * ( radius / 100.0f ) ) * sin( angle_yaw_rad ) );
+	const auto new_point_x = screen_center.x + ((((width - (size * 3)) * .5f) * (radius / 100.0f)) * cos(angle_yaw_rad)) + (int)(6.0f * (((float)size - 4.f) / 16.0f));
+	const auto new_point_y = screen_center.y + ((((height - (size * 3)) * .5f) * (radius / 100.0f)) * sin(angle_yaw_rad));
 
-	std::array< Vector2, 3 >points { Vector2( new_point_x - size, new_point_y - size ),
-		Vector2( new_point_x + size, new_point_y ),
-		Vector2( new_point_x - size, new_point_y + size ) };
+	std::array< Vector2, 3 >points{ Vector2(new_point_x - size, new_point_y - size),
+		Vector2(new_point_x + size, new_point_y),
+		Vector2(new_point_x - size, new_point_y + size) };
 
-	int red = config_system.item.visuals.clr_out_of_fov[0] * 255;
-	int green = config_system.item.visuals.clr_out_of_fov[1] * 255;
-	int blue = config_system.item.visuals.clr_out_of_fov[2] * 255;
 	Color CasualCol = Color(
-		red,
-		green,
-		blue,
+		config->get_color("colorOffscreenEsp").r(),
+		config->get_color("colorOffscreenEsp").g(),
+		config->get_color("colorOffscreenEsp").b(),
 		new_alpha);
 
-	rotateArrow( points, viewangles.y - g_Math.calcAngle( Globals::localPlayer->eyePosition( ), pEntity->getHitbox( 2 ) ).y - 90 );
-	g_Renderer->fillTriangle( points, CasualCol );
+	rotateArrow(points, viewangles.y - g_Math.calcAngle(Globals::localPlayer->eyePosition(), pEntity->getHitbox(2)).y - 90);
+	g_Renderer->fillTriangle(points, CasualCol);
 
 }
-/*
-void CVisuals::antiaimIndicator(CBaseEntity* pEntity)
-{
-	//g_Renderer=Surface Drawings
-
-	if (!Globals::localPlayer || !g_Interfaces->gameEngine->inGame())
-		return;
-
-	int x, y;
-	g_Interfaces->gameEngine->getScreenSize(x, y);
-	int centerX = x / 2;
-
-	int m_Framerate = 0.9 * m_Framerate + (1.0 - 0.9) * g_Interfaces->globalVars->absoluteframetime;
-
-	//left
-	g_Renderer->gradient(centerX - 200, y - 20, centerX - 51, y, Color(255, 0, 0), Color(255, 0, 0), true);
-	g_Renderer->gradient(centerX - 200, y - 20, centerX - 51, y - 19, Color(0, 255, 0), Color(0, 255, 0), true);
-
-	//middle
-	g_Renderer->fillRectangle(centerX - 50, y - 20, centerX + 50, y, Color(0, 0, 200));
-
-	g_Renderer->fillRectangle(centerX - 50, y - 20, centerX + 50, y - 19, Color(0, 0, 255));
-
-	//right
-	g_Renderer->gradient(centerX + 50, y - 20, centerX + 200, y, Color(0, 0, 255), Color(0, 0, 255), false);
-	g_Renderer->gradient(centerX + 50, y - 20, centerX + 200, y - 19, Color(0, 0, 255), Color(0, 0, 255), false);
-
-	//fps
-	g_Renderer->text(centerX - 10, y - 15, getFont(g_Fonts->visuals), std::to_string((int)(1.0f / m_Framerate)), Color(255, 255, 255), true);
-	//draw.Text(centerX - 10, y - 15, get_abs_fps();
-
-	//draw.Color(200, 255, 0, 255);
-	//draw.Text(centerX + 10, y - 15, "fps");
-
-	g_Renderer->text(centerX + 10, y - 15, getFont(g_Fonts->visuals), "fps", Color(200, 255, 0, 255), true);
-
-	//kills
-	//draw.Color(255, 255, 255, 255);
-	//draw.Text(centerX - 70, y - 15, kills);
-
-	//draw.Color(255, 100, 0, 255);
-	//draw.Text(centerX - 55, y - 15, "kills");
-
-	//deaths
-	//draw.Color(255, 255, 255, 255);
-	//draw.Text(centerX + 50, y - 15, deaths);
-
-	//draw.Color(255, 50, 50, 255);
-	//draw.Text(centerX + 65, y - 15, "deaths");
-}*/
-
-/*void CVisuals::drawAntiaimIndicator(bool hotkey)
-{
-	if (!g_Interfaces->gameEngine->inGame() || !g_Interfaces->gameEngine->connected())
-		return;
-
-	if (!Globals::localPlayer)
-		return;
-
-	if (!Globals::localPlayer->alive())
-		return;
-
-	int x, y;
-	g_Interfaces->gameEngine->getScreenSize(x, y);
-
-	if (!config->get_bool("aaEnable"))
-		return;
-
-	Color DirectionCol = Color(
-		config->get_color("clr_menu").r(),
-		config->get_color("clr_menu").g(),
-		config->get_color("clr_menu").b(),
-		config->get_color("clr_menu").a());
-	if (hotkey)
-	{
-		g_Renderer->text((x / 2) + 40, y / 2, getFont(g_Fonts->visuals), ">", Color(255, 255, 255, config->get_color("clr_menu").a()), true);
-		g_Renderer->text((x / 2) - 40, y / 2, getFont(g_Fonts->visuals), "<", DirectionCol, true);
-	}
-	else
-	{
-		g_Renderer->text((x / 2) + 40, y / 2, getFont(g_Fonts->visuals), ">", DirectionCol, true);
-		g_Renderer->text((x / 2) - 40, y / 2, getFont(g_Fonts->visuals), "<", Color(255, 255, 255, config->get_color("clr_menu").a()), true);
-	}
-}*/

@@ -114,7 +114,7 @@ void dormancyManager::soundDormancy( ) {
 }
 
 void dormancyManager::adjustPlayer( const int index ) {
-	if ( !config_system.item.visuals.dormant_check )
+	if ( !config->get_bool("espDormant") )
 		return;
 
 	auto& player = players[ index ];

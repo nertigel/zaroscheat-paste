@@ -22,7 +22,7 @@ void item_purchase::fireGameEvent(IGameEvent* event)
 	//Globals::Message( "hit %s in the %s for %s (%s remaining)", enemy_info.name, szHitgroup.c_str( ), dmg_to_health, remaining_health );
 	std::stringstream msg;
 
-	if ( config_system.item.misc.logs_player_bought )
+	if ( config->get_bool( "miscPurchasesLog" ) )
 	{
 		g_Interfaces->cvar->ConsoleColorPrintf(Color::MenuMain, "[dopamine]");
 

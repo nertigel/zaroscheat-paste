@@ -45,13 +45,6 @@ namespace fs = std::filesystem;
 
 #include "../features/featureManager.hpp"
 
-#include <d3d9.h>
-#include <d3dx9.h>
-#pragma comment(lib, "d3d9.lib")
-#pragma comment(lib, "d3dx9.lib")
-#include "../menu/imgui/imgui.h"
-#include "../menu/imgui/dx9/imgui_impl_dx9.h"
-
 #include "../menu/config/config.hpp"
 
 struct EventInfo
@@ -175,7 +168,7 @@ namespace Globals //TODO: make these inline..
 #define HITBOX_LEFT_FOREARM    18
 #define HITBOX_MAX 19
 
-/*
+
 #include "../features/featureManager.hpp"
 
 class c_config {
@@ -209,4 +202,3 @@ public:
 };
 
 extern c_config *config;
-*/

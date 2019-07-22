@@ -1,5 +1,5 @@
 #include "combo.hpp"
-/*
+
 c_combo::c_combo( const std::string &label, const std::string &var_name, const std::vector<std::string> &items ) {
 	this->label = std::move( label );
 	this->var_name = std::move( var_name );
@@ -92,4 +92,3 @@ void c_combo::draw( ) {
 		}
 	}
 }
-*/

@@ -4,7 +4,7 @@
 
 float __fastcall CHookManager::aspectRatio( void* ecx, void* edx, int32_t width, int32_t height )
 {
-	return (config_system.item.misc.aspect_ratio_w / config_system.item.misc.aspect_ratio_h);
+	return (config->get_int("miscAspectRatioW", 1920) / config->get_int("miscAspectRatioH", 1080));
 }
 
 void __fastcall CHookManager::beginFrame( void* thisptr, void* ptr, float ft )

@@ -6,13 +6,6 @@
 
 #include "../../utilities/includes.h"
 
-#include <d3d9.h>
-#include <d3dx9.h>
-#pragma comment(lib, "d3d9.lib")
-#pragma comment(lib, "d3dx9.lib")
-#include "../../menu/imgui/imgui.h"
-#include "../../menu/imgui/dx9/imgui_impl_dx9.h"
-
 class CHookManager
 {
 private:

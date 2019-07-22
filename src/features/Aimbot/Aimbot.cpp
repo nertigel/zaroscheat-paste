@@ -35,12 +35,11 @@ void restoreToCurrent(CBaseEntity* pEntity)
 
 void CAimbot::creatMove()
 {
-	if (!config_system.item.ragebot.enableaimbot)
+	if (!config->get_bool("rageEnable"))
 		return;
 
 	if (!g_Interfaces->gameEngine->inGame() || !Globals::localPlayer)
 		return;
-
 
 	Vector3 Aimpoint = { 0,0,0 };
 	CBaseEntity* Target = nullptr;
@@ -68,12 +67,11 @@ void CAimbot::creatMove()
 		if (!Globals::localPlayer->alive())
 			continue;
 
-		if (config_system.item.ragebot.backtrack)
+		if (config->get_bool("rageBacktrack"))
 		{
 			for (int j = g_LagCompensation.PlayerRecord[pEntity->EntIndex()].records.size() - 1; j >= 0; j--)
 			{
-
-				switch (config_system.item.ragebot.backtrack_type)
+				switch (config->get_int("rageBacktrackType"))
 				{
 				case 0:
 					record[pEntity->EntIndex()] = g_LagCompensation.PlayerRecord[pEntity->EntIndex()].records.at(0);
@@ -88,7 +86,7 @@ void CAimbot::creatMove()
 		//pEntity->fixSetupBones( matrix[i], g_Interfaces->globalVars->curtime );
 		pEntity->SetupBones(matrix[i], 128, 256, g_Interfaces->globalVars->curtime); //feels more accurate
 
-		if (config_system.item.ragebot.backtrack)
+		if (config->get_bool("rageBacktrack"))
 			restoreToCurrent(pEntity);
 
 		if (!Globals::localPlayer->activeWeapon() || Globals::localPlayer->isKnifeorNade())
@@ -138,18 +136,18 @@ void CAimbot::creatMove()
 		Globals::targetIndex = targetID;
 
 		Vector3 Angle = g_Math.calcAngle(Globals::localPlayer->eyePosition(), Aimpoint);
-		bool hitchanced = hitChance(Target, Globals::localPlayer->activeWeapon(), Angle, Aimpoint, config_system.item.ragebot.hitchance_amount);
+		bool hitchanced = hitChance(Target, Globals::localPlayer->activeWeapon(), Angle, Aimpoint, config->get_int("rageHitchanceValue"));
 
-		if (config_system.item.ragebot.automatic_scope && Globals::localPlayer->activeWeapon()->hasScope() && !(Globals::oCmd->buttons & IN_ATTACK2) && !Globals::localPlayer->scoped() && canShoot && !hitchanced)
+		if (config->get_bool("rageAutomaticScope") && Globals::localPlayer->activeWeapon()->hasScope() && !(Globals::oCmd->buttons & IN_ATTACK2) && !Globals::localPlayer->scoped() && canShoot && !hitchanced)
 			Globals::oCmd->buttons |= IN_ATTACK2; //sniper check....
 
 		static int MinimumVelocity = 0;
 
-		if (config_system.item.ragebot.automatic_stop_type == 0)
+		if (config->get_int("rageAutomaticStopType") == 0)
 		{
 			MinimumVelocity = Globals::localPlayer->activeWeapon()->weaponData()->maxSpeedAlt * .34f;
 		}
-		else if (config_system.item.ragebot.automatic_stop_type == 1)
+		else if (config->get_int("rageAutomaticStopType") == 1)
 		{
 			MinimumVelocity = 0;
 		}
@@ -166,7 +164,7 @@ void CAimbot::creatMove()
 
 			Globals::oCmd->viewAngles = Angle - (Globals::localPlayer->aimPunchAngle() * g_Interfaces->cvar->FindVar("weapon_recoil_scale")->GetFloat());
 
-			if (config_system.item.ragebot.automaticfire)
+			if (config->get_bool("rageAutomaticFire"))
 			{
 				Globals::oCmd->buttons |= IN_ATTACK;
 			}
@@ -175,7 +173,7 @@ void CAimbot::creatMove()
 
 			Globals::oCmd->tickCount = TIME_TO_TICKS(simtime[targetID]) + TIME_TO_TICKS(g_LagCompensation.getLerpTime());
 
-			if (!config_system.item.ragebot.fakeduck && !GetAsyncKeyState(config_system.item.config.bind_fakeduck_key))
+			if (!config->get_bool("rageFakeDuck") && !menu->get_hotkey("rageFakeDuckKey"))
 				Globals::bSendPacket = true;
 			else
 				Globals::bSendPacket = false;
@@ -188,8 +186,7 @@ void CAimbot::creatMove()
 
 void CAimbot::autoStop()
 {
-
-	if (!config_system.item.ragebot.automatic_stop || (GetAsyncKeyState(config_system.item.config.bind_slowmotion_key) && config_system.item.antiaim.slowmotion))
+	if (!config->get_bool("rageAutomaticStop") || (menu->get_hotkey("aaSlowMotionKey") && config->get_bool("aaSlowMotion")))
 		return;
 
 	Vector3 Velocity = Globals::localPlayer->velocity();
@@ -212,7 +209,7 @@ void CAimbot::autoStop()
 
 bool CAimbot::hitChance(CBaseEntity* pEnt, CBaseCombatWeapon* pWeapon, Vector3 Angle, Vector3 Point, int chance)
 {
-	if (chance == 0 || !config_system.item.ragebot.hitchance_amount)
+	if (chance == 0 || !config->get_int("rageHitchanceValue"))
 		return true;
 
 	int traces_hit = 0;
@@ -268,7 +265,7 @@ bool CAimbot::hitChance(CBaseEntity* pEnt, CBaseCombatWeapon* pWeapon, Vector3 A
 			++traces_hit;
 
 
-		if (traces_hit >= (int)(config_system.item.ragebot.hitchance_amount * 2.56f))
+		if (traces_hit >= (int)(config->get_int("rageHitchanceValue") * 2.56f))
 			return true;
 	}
 
@@ -311,13 +308,13 @@ bool shouldBaim(CBaseEntity* pEnt) // probably dosnt make sense
 		ShotTime[pEnt->EntIndex()] = 0.f;
 	}
 
-	if (config_system.item.ragebot.bodyaim_if_inair && !(pEnt->flags() & FL_ONGROUND))
+	if (config->get_bool("rageBodyAimAir") && !(pEnt->flags() & FL_ONGROUND))
 		return true;
 
-	if (GetAsyncKeyState(config_system.item.config.bind_bodyaim_key))
+	if (menu->get_hotkey("rageBodyAimKey"))
 		return true;
 
-	if (Globals::MissedShots[pEnt->EntIndex()] > config_system.item.ragebot.bodyaim_missedshots && config_system.item.ragebot.bodyaim_if_missedshots)
+	if (Globals::MissedShots[pEnt->EntIndex()] > config->get_int("rageBodyAimShotsAmount") && config->get_bool("rageBodyAimShots"))
 		return true;
 
 	return false;
@@ -347,7 +344,7 @@ Vector3 CAimbot::hitScan(CBaseEntity* pEnt) // supremeemmemememememe
 	bool AvoidHeadBool = false;
 	bool AvoidLimbsBool = false;
 
-	if ( config_system.item.ragebot.avoid_head_jumping )
+	if (config->get_bool("rageAvoidHeadJumping"))
 	{ 
 		if ( pEnt->flags() & FL_ONGROUND )
 			AvoidHeadBool = true;
@@ -357,7 +354,7 @@ Vector3 CAimbot::hitScan(CBaseEntity* pEnt) // supremeemmemememememe
 	else
 		AvoidHeadBool = false;
 
-	if ( config_system.item.ragebot.avoid_limbs_moving )
+	if (config->get_bool("rageAvoidLimbsMoving"))
 	{
 		if (Velocity > 0.f)
 			AvoidLimbsBool = true;
@@ -367,17 +364,17 @@ Vector3 CAimbot::hitScan(CBaseEntity* pEnt) // supremeemmemememememe
 	else
 		AvoidLimbsBool = false;
 
-	if (!Baim && config_system.item.ragebot.hitbox_head)
+	if (!Baim && (config->get_int("rageHitboxes") & (1 << 1)))
 		Scan.push_back(HITBOX_HEAD);
 
-	if (!Baim && config_system.item.ragebot.hitbox_head && !AvoidHeadBool && config_system.item.ragebot.multipoint_head)
+	if (!Baim && (config->get_int("rageHitboxes") & (1 << 1)) && !AvoidHeadBool && (config->get_int("rageMultipoints") & (1 << 1)))
 	{
 		Scan.push_back(25);//head
 		Scan.push_back(26);
 		Scan.push_back(27);
 	}
 
-	if (config_system.item.ragebot.hitbox_chest)
+	if (config->get_int("rageHitboxes") & (1 << 2))
 	{
 		Scan.push_back(HITBOX_PELVIS);
 		Scan.push_back(HITBOX_THORAX);
@@ -385,7 +382,7 @@ Vector3 CAimbot::hitScan(CBaseEntity* pEnt) // supremeemmemememememe
 		Scan.push_back(HITBOX_UPPER_CHEST);
 	}
 
-	if (config_system.item.ragebot.hitbox_chest && config_system.item.ragebot.multipoint_body)
+	if (config->get_int("rageHitboxes") & (1 << 2) && (config->get_int("rageHitboxes") & (1 << 2)))
 	{
 		Scan.push_back(19);//pelvis
 		Scan.push_back(20);
@@ -397,18 +394,18 @@ Vector3 CAimbot::hitScan(CBaseEntity* pEnt) // supremeemmemememememe
 		Scan.push_back(24);
 	}
 
-	if (config_system.item.ragebot.hitbox_stomach)
+	if (config->get_int("rageHitboxes") & (1 << 3))
 		Scan.push_back(HITBOX_BELLY);
 
-	HeadHeight = config_system.item.ragebot.multipoint_head_scale;
+	HeadHeight = config->get_int("rageHeadScale");
 
-	if (!AvoidLimbsBool && config_system.item.ragebot.hitbox_arms)
+	if (!AvoidLimbsBool && config->get_int("rageHitboxes") & (1 << 4))
 	{
 		Scan.push_back(HITBOX_LEFT_UPPER_ARM);
 		Scan.push_back(HITBOX_RIGHT_UPPER_ARM);
 	}
 
-	if (!AvoidLimbsBool && config_system.item.ragebot.hitbox_legs)
+	if (!AvoidLimbsBool && config->get_int("rageHitboxes") & (1 << 5))
 	{
 		Scan.push_back(HITBOX_LEFT_CALF);
 		Scan.push_back(HITBOX_RIGHT_CALF);
@@ -417,7 +414,7 @@ Vector3 CAimbot::hitScan(CBaseEntity* pEnt) // supremeemmemememememe
 		Scan.push_back(HITBOX_RIGHT_THIGH);
 	}
 
-	if (!AvoidLimbsBool && config_system.item.ragebot.hitbox_feet)
+	if (!AvoidLimbsBool && config->get_int("rageHitboxes") & (1 << 6))
 	{
 		Scan.push_back(HITBOX_LEFT_FOOT);
 		Scan.push_back(HITBOX_RIGHT_FOOT);
@@ -435,7 +432,7 @@ Vector3 CAimbot::hitScan(CBaseEntity* pEnt) // supremeemmemememememe
 
 			float Radius = 0;
 			Hitbox = pEnt->hitboxPosition(HitboxForMuti[hitbox - 22], matrix[pEnt->EntIndex()], &Radius);
-			Radius *= (config_system.item.ragebot.multipoint_body_scale / 100.f);
+			Radius *= (config->get_int("ragePointScale") / 100.f);
 			Hitbox = Vector3(Hitbox.x + (Radius * Mutipoint[((hitbox - 22) % 2)].x), Hitbox.y - (Radius * Mutipoint[((hitbox - 22) % 2)].y), Hitbox.z);
 		}
 		else if (hitbox > 27 && hitbox < 32)
@@ -457,7 +454,7 @@ Vector3 CAimbot::hitScan(CBaseEntity* pEnt) // supremeemmemememememe
 		else
 			DamageArray[hitbox] = 0;
 
-		if (config_system.item.ragebot.bodyaim_if_lethal && hitbox != 0 && hitbox != 25 && hitbox != 26 && hitbox != 27 && Damage >= (pEnt->health() + 10))
+		if (config->get_bool("rageBodyAimLethal") && hitbox != 0 && hitbox != 25 && hitbox != 26 && hitbox != 27 && Damage >= (pEnt->health() + 10))
 		{
 			DamageArray[hitbox] = 400;
 			Baim = true;
@@ -474,7 +471,7 @@ Vector3 CAimbot::hitScan(CBaseEntity* pEnt) // supremeemmemememememe
 	}
 
 
-	float dmg = config_system.item.ragebot.minimum_damage == 100 ? pEnt->health() : config_system.item.ragebot.minimum_damage;
+	float dmg = config->get_int("rageMinDamageValue") == 100 ? pEnt->health() : config->get_int("rageMinDamageValue");
 	if (tempDmg >= dmg)
 	{
 		bestEntDmg = tempDmg;
@@ -497,7 +494,7 @@ Vector3 CAimbot::hitScan(CBaseEntity* pEnt) // supremeemmemememememe
 
 	if (g_LagCompensation.isTickValid(g_Aimbot.record[pEnt->EntIndex()]))
 	{
-		if (config_system.item.ragebot.backtrack)
+		if (config->get_bool("rageBacktrack"))
 		{
 			if (g_Autowall.CanHitFloatingPoint(pEnt->hitboxPosition(HITBOX_HEAD, g_Aimbot.record[pEnt->EntIndex()].boneMatrix), Globals::localPlayer->eyePosition()) && !backtrack[pEnt->EntIndex()])
 			{

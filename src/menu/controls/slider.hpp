@@ -1,6 +1,6 @@
 #pragma once
 #include "../menu.hpp"
-/*
+
 class c_slider : public c_element {
 private:
 	float min_value;
@@ -17,4 +17,3 @@ public:
 	void draw( ) override;
 
 };
-*/

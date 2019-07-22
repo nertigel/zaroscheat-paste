@@ -22,10 +22,10 @@ void player_hurt::fireGameEvent( IGameEvent *event )
 	if ( g_Interfaces->gameEngine->getPlayerIndex( event->GetInt( "attacker" ) ) == g_Interfaces->gameEngine->getLocalPlayer( ) &&
 		g_Interfaces->gameEngine->getPlayerIndex( event->GetInt( "userid" ) ) != g_Interfaces->gameEngine->getLocalPlayer( ) )
 	{	
-		if ( config_system.item.visuals.hitmarker || config_system.item.visuals.damage_indicator )
+		if ( config->get_bool( "espHitmarker" ) || config->get_bool( "espDamageIndicator" ) )
 			hitMarkerInfo.push_back( { g_Interfaces->globalVars->curtime + 0.8f, event->GetInt( "dmg_health" ) } );
 		
-		switch ( config_system.item.visuals.hitmarker_sound ) {
+		switch ( config->get_bool( "espHitmarkerSound" ) ) {
 		case 0:
 			break;
 		case 1: {
@@ -52,7 +52,7 @@ void player_hurt::fireGameEvent( IGameEvent *event )
 		_flHurtTime = g_Interfaces->globalVars->curtime;
 	}
 
-	if ( config_system.item.misc.logs_player_hurt )
+	if ( config->get_bool( "miscDamageLog" ) )
 	{
 		auto HitgroupToString = [ ] ( int hitgroup ) -> std::string
 		{
@@ -160,7 +160,7 @@ void player_hurt::paint( void )
 
 	float alpha = 0.f;
 
-	if ( config_system.item.visuals.hitmarker || config_system.item.visuals.damage_indicator )
+	if ( config->get_bool( "espHitmarker" ) || config->get_bool( "espDamageIndicator" ) )
 	{
 		for ( size_t i = 0; i < hitMarkerInfo.size( ); i++ )
 		{
@@ -177,12 +177,12 @@ void player_hurt::paint( void )
 			float ratio = 1.f - ( diff / 0.8f );
 			alpha = 0.8f - diff / 0.8f;
 
-			if ( config_system.item.visuals.damage_indicator )
+			if ( config->get_bool( "espDamageIndicator" ) )
 				g_renderer_d3d->draw_text( width / 2 + 6 + ratio * dist / 2, height / 2 + 6 + ratio * dist, g_renderer_d3d->menu_bold, std::to_string( hitMarkerInfo.at( i ).m_iDmg ).c_str( ), Color::MenuMain, 4 );
 
 		}
 
-		if ( hitMarkerInfo.size( ) > 0 && config_system.item.visuals.hitmarker )
+		if ( hitMarkerInfo.size( ) > 0 && config->get_bool( "espHitmarker" ) )
 		{
 			int screenCenterX, screenCenterY;
 			g_Interfaces->gameEngine->getScreenSize( screenCenterX, screenCenterY );
@@ -193,7 +193,7 @@ void player_hurt::paint( void )
 				int hitmarkerAlpha = static_cast< int >( static_cast< float >( ( ( _flHurtTime + 0.30f ) - g_Interfaces->globalVars->curtime )
 					/ 1.2 ) * 1000.f );
 				
-				if ( config_system.item.visuals.visuals_type == 0 ) {
+				if ( config->get_bool( "espType" ) == 0 ) {
 					int lineSize = 8;
 					g_renderer_d3d->line( screenCenterX - lineSize, screenCenterY - lineSize, screenCenterX - ( lineSize / 4 ), screenCenterY - ( lineSize / 4 ), Color( 255, 255, 255, ( int )hitmarkerAlpha ) );
 					g_renderer_d3d->line( screenCenterX - lineSize, screenCenterY + lineSize, screenCenterX - ( lineSize / 4 ), screenCenterY + ( lineSize / 4 ), Color( 255, 255, 255, ( int )hitmarkerAlpha ) );
@@ -209,7 +209,7 @@ void player_hurt::paint( void )
 		}
 	}
 
-	if ( config_system.item.misc.logs_player_hurt || config_system.item.misc.logs_player_bought)
+	if ( config->get_bool( "miscDamageLog" ) || config->get_bool( "miscPurchasesLog" ) )
 	{
 		for ( size_t i = 0; i < Globals::eventInfo.size( ); i++ )
 		{

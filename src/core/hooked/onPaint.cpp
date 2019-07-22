@@ -17,7 +17,7 @@ void __fastcall CHookManager::onPaint( void *ecx, void *edx, unsigned int panel,
 	if ( strcmp( g_Interfaces->panel->getPanelName( panel ), "HudZoom" ) == 0 )
 		hudZoomPanel = panel;
 
-	if ( panel == hudZoomPanel && config_system.item.visuals.removals_scope && Globals::localPlayer && Globals::localPlayer->alive( ) && Globals::localPlayer->scoped( ) )
+	if ( panel == hudZoomPanel && config->get_bool("espRemovalsScope") && Globals::localPlayer && Globals::localPlayer->alive( ) && Globals::localPlayer->scoped( ) )
 		return;
 
 	originalFn( ecx, edx, panel, unk0, unk1 );
@@ -61,7 +61,7 @@ void __fastcall CHookManager::onPaint( void *ecx, void *edx, unsigned int panel,
 	g_Renderer->text( 9, 7, g_Fonts->watermark, std::string( "dopamine (Dev) | " ).append( __DATE__ ).append( " | " ).append( getCurrentTime( ) ), Color( 222, 222, 222 ) );
 #endif*/
 
-	if (config_system.item.misc.watermark)
+	if (config->get_bool("miscWatermark"))
 	{
 		std::stringstream ss;
 		auto net_channel = g_Interfaces->gameEngine->netchannelInfo();
@@ -98,7 +98,7 @@ void __fastcall CHookManager::onPaint( void *ecx, void *edx, unsigned int panel,
 		g_Renderer->text(9, 7, g_Fonts->watermark, std::string("Dopamine | ").append(__DATE__).append(" | ").append(getCurrentTime()), Color(222, 222, 222));*/
 	}
 
-	if ( config_system.item.visuals.autowall_indicator && Globals::localPlayer && Globals::localPlayer->alive( ) && g_Interfaces->gameEngine->inGame( ) ) {
+	if (config->get_bool("espAutowallIndicator") && Globals::localPlayer && Globals::localPlayer->alive( ) && g_Interfaces->gameEngine->inGame( ) ) {
 		float damage = 0.f;
 		g_Renderer->fillRectangle( x - 1, y - 1, 3, 3, g_Autowall.CanWallbang( damage ) ? Color( 0, 255, 0 ) : Color( 255, 0, 0 ) );
 		if (g_Autowall.CanWallbang(damage))
@@ -106,7 +106,7 @@ void __fastcall CHookManager::onPaint( void *ecx, void *edx, unsigned int panel,
 	}
 
 
-	if (config_system.item.antiaim.enable_antiaim && config_system.item.config.bind_antiaimflip_key && Globals::localPlayer && Globals::localPlayer->alive() && g_Interfaces->gameEngine->inGame())
+	/*if (config->get_bool("aaEnable") && config_system.item.config.bind_antiaimflip_key && Globals::localPlayer && Globals::localPlayer->alive() && g_Interfaces->gameEngine->inGame())
 	{
 		if (GetAsyncKeyState(config_system.item.config.bind_antiaimflip_key))
 		{
@@ -118,24 +118,22 @@ void __fastcall CHookManager::onPaint( void *ecx, void *edx, unsigned int panel,
 			g_Renderer->text(x + 40, y, (g_Fonts->indicator), ">", Color::MenuMain, true);
 			g_Renderer->text(x - 40, y, (g_Fonts->indicator), "<", Color(255, 255, 255, 55), true);
 		}
-	}
+	}*/
 }
 
 static bool initialized = false;
 
-long __stdcall CHookManager::onPaintDX9( LPDIRECT3DDEVICE9 dx9Device, LPRECT sourceRect, LPRECT destRect, HWND destWindowOverride, LPRGNDATA dirtyRegion )
+long __stdcall CHookManager::onPaintDX9(LPDIRECT3DDEVICE9 dx9Device, LPRECT sourceRect, LPRECT destRect, HWND destWindowOverride, LPRGNDATA dirtyRegion)
 {
-	static auto originalFn = g_Hooks->dx9DeviceHook->getOriginalFunction<decltype( &onPaintDX9 )>( 17 );
+	static auto originalFn = g_Hooks->dx9DeviceHook->getOriginalFunction<decltype(&onPaintDX9)>(17);
 
-	if ( !initialized )
+	if (!initialized)
 	{
-		g_renderer_d3d->init( dx9Device );
-		menu.apply_fonts();
-		menu.setup_resent(dx9Device);
+		g_renderer_d3d->init(dx9Device);
 		initialized = true;
 	}
 
-	g_renderer_d3d->begin( );
+	g_renderer_d3d->begin();
 
 	if (initialized)
 	{
@@ -150,24 +148,18 @@ long __stdcall CHookManager::onPaintDX9( LPDIRECT3DDEVICE9 dx9Device, LPRECT sou
 		g_Misc.drawIndicators();
 		g_Visuals.inaccuracyOverlay();
 
-		//menu->think( );
-		//menudraw( );
-		menu.pre_render(dx9Device);
-		menu.post_render();
-
-		menu.run_popup();
-		menu.run();
-		menu.end_present(dx9Device);
+		menu->think();
+		menu->draw();
 	}
 
-	g_renderer_d3d->end( );
+	g_renderer_d3d->end();
 
-	if ( !g_Renderer->isUsingDX9( ) )
-		return originalFn( dx9Device, sourceRect, destRect, destWindowOverride, dirtyRegion );
+	if (!g_Renderer->isUsingDX9())
+		return originalFn(dx9Device, sourceRect, destRect, destWindowOverride, dirtyRegion);
 
-	g_Renderer->preRender( );
-	g_Features->onPaint( );
-	g_Renderer->postRender( );
+	g_Renderer->preRender();
+	g_Features->onPaint();
+	g_Renderer->postRender();
 
-	return originalFn( dx9Device, sourceRect, destRect, destWindowOverride, dirtyRegion );
+	return originalFn(dx9Device, sourceRect, destRect, destWindowOverride, dirtyRegion);
 }

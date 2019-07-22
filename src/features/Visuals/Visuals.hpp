@@ -4,14 +4,14 @@
 class CVisuals : public CFeature
 {
 public:
-	void onMove( float sampleTime, CUserCmd *userCmd ) override;
-	void onFrameStage( clientFrameStage_t frameStage ) override;
-	void onPaint( unsigned int panel ) override;
-	void onEvent( IGameEvent* pEvent ) override;
+	void onMove(float sampleTime, CUserCmd* userCmd) override;
+	void onFrameStage(clientFrameStage_t frameStage) override;
+	void onPaint(unsigned int panel) override;
+	void onEvent(IGameEvent* pEvent) override;
 
-	void glow( );
-	void historyHitbox( int entity );
-	void inaccuracyOverlay( );
+	void glow();
+	void historyHitbox(int entity);
+	void inaccuracyOverlay();
 
 	//void drawAntiaimIndicator( bool hotkey );
 
@@ -28,35 +28,35 @@ private:
 		int x, y, w, h;
 	} Box;
 
-	bool boundingBox( CBaseEntity* pEntity, Vector3 offset = Vector3( 0, 0, 0 ) );
+	bool boundingBox(CBaseEntity* pEntity, Vector3 offset = Vector3(0, 0, 0));
 
-	void playerBox( CBaseEntity* pEntity );
-	void playerHealth( CBaseEntity* pEntity );
-	void playerName( CBaseEntity* pEntity, int index );
-	void playerWeapon( CBaseEntity* pEntity );
-	void playerAmmo( CBaseEntity* pEntity );
-	void playerFlags( CBaseEntity* pEntity );
+	void playerBox(CBaseEntity* pEntity);
+	void playerHealth(CBaseEntity* pEntity);
+	void playerName(CBaseEntity* pEntity, int index);
+	void playerWeapon(CBaseEntity* pEntity);
+	void playerAmmo(CBaseEntity* pEntity);
+	void playerFlags(CBaseEntity* pEntity);
 
-	void playerBones( CBaseEntity* pEntity );
-	void playerHistoryBones( CBaseEntity* pEntity );
+	void playerBones(CBaseEntity* pEntity);
+	void playerHistoryBones(CBaseEntity* pEntity);
 
-	void worldWeapon( CBaseEntity* pEntity );
+	void worldWeapon(CBaseEntity* pEntity);
 
-	void localViewModelSpoof( );
-	void localViewModelCM( );
-	void noScopeLines( );
+	void localViewModelSpoof();
+	void localViewModelCM();
+	void noScopeLines();
 
-	void nightModulation( );
-	void removeNight( );
-	void applyFullBright( );
-	void removeFullBright( );
-	void outOfPovArrows( CBaseEntity * pEntity );
+	void nightModulation();
+	void removeNight();
+	void applyFullBright();
+	void removeFullBright();
+	void outOfPovArrows(CBaseEntity* pEntity);
 
-	static unsigned int getFont( unsigned int defaultFont ) {
-		return config_system.item.visuals.visuals_type == 0 ? defaultFont : g_Fonts->visualsAlternate;
+	static unsigned int getFont(unsigned int defaultFont) {
+		return config->get_bool("espType") == 0 ? defaultFont : g_Fonts->visualsAlternate;
 	}
 
-	std::unordered_map< int, const char * > weaponIcon = {
+	std::unordered_map< int, const char* > weaponIcon = {
 { weapon_deagle, "F" },
 { weapon_duals, "S" },
 { weapon_five7, "U" },
@@ -110,11 +110,11 @@ private:
 { weapon_knife_dagger, "J" }
 	};
 
-	std::string weaponToIcon( const int id )
+	std::string weaponToIcon(const int id)
 	{
-		auto search = weaponIcon.find( id );
-		if ( search != weaponIcon.end( ) )
-			return std::string( search->second, 1 );
+		auto search = weaponIcon.find(id);
+		if (search != weaponIcon.end())
+			return std::string(search->second, 1);
 
 		return "";
 	}

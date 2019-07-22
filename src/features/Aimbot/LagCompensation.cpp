@@ -61,7 +61,7 @@ void CLagCompensation_new::storeRecords( CBaseEntity* pEntity )
 	{
 		tickRecord rec = PlayerRecord[ i ].records.at( j );
 
-		switch ( config_system.item.ragebot.backtrack_type )
+		switch (config->get_int("rageBacktrackType"))
 		{
 		case 0:
 			rec = PlayerRecord[ i ].records.at( 0 );

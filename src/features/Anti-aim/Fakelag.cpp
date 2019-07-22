@@ -7,7 +7,7 @@ CFakeLag* g_FakeLag;
 void CFakeLag::createMove( ) // lotta shit is wrong here
 {
 
-	if ( !config_system.item.ragebot.fakelag )
+	if ( !config->get_bool("rageChokeEnable"))
 		return;
 
 	if ( !g_Interfaces->gameEngine->inGame( ) && !g_Interfaces->gameEngine->connected( ) )
@@ -19,7 +19,7 @@ void CFakeLag::createMove( ) // lotta shit is wrong here
 	if ( Globals::oCmd->buttons & IN_USE )
 		return;
 
-	if ( config_system.item.ragebot.fakeduck && GetAsyncKeyState(config_system.item.config.bind_fakeduck_key) )
+	if (config->get_bool("rageFakeDuck") && menu->get_hotkey("rageFakeDuckKey"))
 		fakeDuck( );
 
 	if ( !handleActivation( ) )
@@ -29,8 +29,8 @@ void CFakeLag::createMove( ) // lotta shit is wrong here
 		adaptiveTicks = 2,
 		wishTicks_1;
 
-	if ( config_system.item.ragebot.fakeduck && !GetAsyncKeyState(config_system.item.config.bind_fakeduck_key) )
-		wishTicks_1 = config_system.item.ragebot.fakelag_ticks;
+	if (config->get_bool("rageFakeDuck") && !menu->get_hotkey("rageFakeDuckKey"))
+		wishTicks_1 = config->get_int("rageChokeAmount");
 	else
 		wishTicks_1 = 13;
 
@@ -40,7 +40,7 @@ void CFakeLag::createMove( ) // lotta shit is wrong here
 	std::mt19937 generator( random( ) );
 	std::uniform_int_distribution randomLag( wishTicks, wishTicks_1 );
 
-	switch ( config_system.item.ragebot.fakelag_type )
+	switch ( config->get_int("rageChokeType") )
 	{
 	case 0:
 		wishTicks = wishTicks_1;
@@ -107,22 +107,22 @@ bool CFakeLag::handleActivation( )
 {
 	if ( Globals::localPlayer->flags( ) & FL_ONGROUND )
 	{
-		if ( config_system.item.ragebot.fakelag && Globals::localPlayer->velocity( ).Length2D( ) < 10 )
+		if ( config->get_int( "rageChokeActivation" ) & ( 1 << 1 ) && Globals::localPlayer->velocity( ).Length2D( ) < 10 )
 			return true;
 
-		if ( config_system.item.ragebot.fakelag && Globals::localPlayer->velocity( ).Length2D( ) > 10 )
+		if ( ( config->get_int( "rageChokeActivation" ) & ( 1 << 2 ) ) && Globals::localPlayer->velocity( ).Length2D( ) > 10 )
 			return true;
 
-		if ( config_system.item.ragebot.fakeduck && GetAsyncKeyState(config_system.item.config.bind_fakeduck_key) )
+		if ( menu->get_hotkey( "rageFakeDuckKey" ) )
 			return true;
 	}
 	else
 	{
-		if ( config_system.item.ragebot.fakelag )
+		if ( config->get_int( "rageChokeActivation" ) & ( 1 << 3 ) )
 			return true;
 	}
 
-	if ( config_system.item.ragebot.fakelag && Globals::oCmd->buttons & IN_ATTACK )
+	if ( ( config->get_int( "rageChokeActivation" )  & ( 1 << 4 ) ) && Globals::oCmd->buttons & IN_ATTACK )
 		return true;
 
 	return false;

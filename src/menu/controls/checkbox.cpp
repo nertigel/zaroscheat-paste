@@ -1,5 +1,5 @@
 #include "checkbox.hpp"
-/*
+
 c_checkbox::c_checkbox( const std::string &label, const std::string &var_name ) {
 	this->label = std::move( label );
 	this->var_name = std::move( var_name );
@@ -38,4 +38,3 @@ void c_checkbox::draw( ) {
 
 	g_renderer_d3d->menu->draw_text( this->label, { draw_position.x + 15, draw_position.y - 2 }, Color( 220, 220, 220 ), font_flags_d3d::font_dropshadow );
 }
-*/

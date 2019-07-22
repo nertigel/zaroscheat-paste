@@ -20,19 +20,19 @@ void CMisc::onMove( float sampleTime, CUserCmd* userCmd )
 	if ( !Globals::localPlayer )
 		return;
 	
-	if ( config_system.item.misc.bunny_hop )
+	if ( config->get_bool( "miscBunnyhop" ) )
 		Bunnyhop( userCmd );
 
-	if ( config_system.item.misc.auto_strafe )
+	if ( config->get_bool( "miscStrafe" ) )
 		autoStrafe( userCmd );
 
 	//if ( config->get_bool( "miscDuckInAir" ) )
 		//duckInAir( userCmd );
 
-	if ( config_system.item.antiaim.slowmotion )
+	if ( config->get_bool( "aaSlowMotion" ) )
 		slowWalk( userCmd );
 
-	if ( config_system.item.misc.remove_duck_delay )
+	if ( config->get_bool( "miscUnlimitedDuck" ) )
 		removeDuckDelay( userCmd );
 }
 
@@ -113,49 +113,33 @@ void CMisc::movementFix( Vector3& oldang )
 	Globals::oCmd->sidemove = y;
 }
 
-void CMisc::Bunnyhop( CUserCmd* pCmd )
+void CMisc::Bunnyhop(CUserCmd* pCmd)
 {
 
-	if ( !config_system.item.misc.bunny_hop )
+	if (!config->get_bool("miscBunnyhop"))
 		return;
 
-	if ( !Globals::localPlayer->alive( ) )
+	if (!Globals::localPlayer->alive())
 		return;
-
-	const int hitchance = config_system.item.misc.bunny_hop_hitchance;
-	const int restrict_limit = 12;
-	const int hop_limit = config_system.item.misc.bunny_hop_maximum_value;
-	const int min_hop = config_system.item.misc.bunny_hop_minimum_value;
-	static int hops_restricted = 0;
-	static int hops_hit = 0;
 
 	static bool bLastJumped = false;
 	static bool bShouldFake = false;
 
-	if ( !bLastJumped && bShouldFake )
+	if (!bLastJumped && bShouldFake)
 	{
 		bShouldFake = false;
 		pCmd->buttons |= IN_JUMP;
 	}
-	else if ( pCmd->buttons & IN_JUMP )
+	else if (pCmd->buttons & IN_JUMP)
 	{
-		if ( Globals::localPlayer->flags( ) & FL_ONGROUND )
+		if (Globals::localPlayer->flags() & FL_ONGROUND)
 			bShouldFake = bLastJumped = true;
 		else
 		{
-			if ((rand() % 100 > hitchance && hops_restricted < restrict_limit) || (hop_limit > 0 && hops_hit > hop_limit && min_hop > 0 && hops_hit > min_hop)) {
-				pCmd->buttons &= ~IN_JUMP;
-				hops_restricted++;
-				hops_hit = 0;
-			}
-			else {
-				hops_hit++;
-			}
-			//pCmd->buttons &= ~IN_JUMP;
+			pCmd->buttons &= ~IN_JUMP;
 			bLastJumped = false;
 		}
 	}
-
 }
 
 void CMisc::autoStrafe( CUserCmd* pCmd )
@@ -197,7 +181,7 @@ void CMisc::autoStrafe( CUserCmd* pCmd )
 	if ( Globals::localPlayer->moveType( ) == 2 && !( Globals::localPlayer->flags( ) & FL_ONGROUND && !( pCmd->buttons & IN_JUMP ) ) )
 	{
 
-		if ( config_system.item.misc.auto_strafe_wasd == 1 )
+		if ( config->get_bool("miscKeyStrafe") == 1 )
 		{
 			if ( pCmd->sidemove < 0 )
 				Globals::originalViewAngle.y += 90;
@@ -231,7 +215,7 @@ void CMisc::autoStrafe( CUserCmd* pCmd )
 
 
 			auto velocityDelta = g_Math.NormalizeFloat( Globals::originalViewAngle.y - velocity_angles.y );
-			auto retrack = idealStrafe * ( 15.f - config_system.item.misc.auto_strafe_speed );
+			auto retrack = idealStrafe * ( 15.f - config->get_int("miscStrafeSpeed") );
 
 			if ( velocityDelta <= retrack || speed <= 15.f )
 			{
@@ -267,7 +251,7 @@ void CMisc::duckInAir(CUserCmd* pCmd)
 
 void CMisc::slowWalk( CUserCmd* pCmd )
 {
-	if ( !config_system.item.antiaim.slowmotion )
+	if ( !config->get_bool("aaSlowMotion") )
 		return;
 
 	auto weapon = Globals::localPlayer->activeWeapon( );
@@ -291,7 +275,7 @@ void CMisc::slowWalk( CUserCmd* pCmd )
 		*/
 		Globals::localPlayer->setVelocity( { 0,0,0 } );
 
-		if ( state->speed_2d >= desired_speed && GetAsyncKeyState(config_system.item.config.bind_slowmotion_key) )
+		if ( state->speed_2d >= desired_speed && menu->get_hotkey("aaSlowMotionKey") )
 		{
 			pCmd->sidemove = 0.f;
 			pCmd->forwardmove = 0.f;
@@ -303,7 +287,7 @@ void CMisc::slowWalk( CUserCmd* pCmd )
 void CMisc::removeDuckDelay( CUserCmd* pCmd )
 {
 
-	if ( !config_system.item.misc.remove_duck_delay)
+	if ( !config->get_bool( "miscUnlimitedDuck" ) )
 		return;
 
 	if ( !Globals::localPlayer->alive( ) )
@@ -322,7 +306,7 @@ void CMisc::thirdPerson( clientFrameStage_t frameStage )
 
 	static bool init = false;
 
-	if ( config_system.item.visuals.thirdperson && GetAsyncKeyState(config_system.item.config.bind_thirdperson_key) && Globals::localPlayer->alive( ) ) //reeeeeeeeeeeeeeeeeeee, pasted. have to think about another way since this is shit
+	if ( config->get_bool("espThirdperson") && menu->get_hotkey("espThirdpersonKey") && Globals::localPlayer->alive( ) ) //reeeeeeeeeeeeeeeeeeee, pasted. have to think about another way since this is shit
 	{
 		if ( init )
 		{
@@ -358,14 +342,13 @@ void CMisc::thirdPerson( clientFrameStage_t frameStage )
 
 void CMisc::crosshair( )
 {
-
-	int value = Globals::localPlayer->scoped( ) ? 0 : ( config_system.item.visuals.force_crosshair ? 3 : 0 );
+	int value = Globals::localPlayer->scoped( ) ? 0 : ( config->get_bool("miscCrosshair") ? 3 : 0 );
 	g_Interfaces->cvar->FindVar( "weapon_debug_spread_show" )->SetValue( value );
 }
 
 void CMisc::spectatorList( )
 {
-	if ( !config_system.item.visuals.spectators_list )
+	if ( !config->get_bool("miscSpectators") )
 		return;
 
 	if ( !g_Interfaces->gameEngine->connected( ) && !g_Interfaces->gameEngine->inGame( ) )
@@ -452,9 +435,9 @@ void CMisc::drawIndicators( )
 		y -= 30;
 	};
 
-	if ( config_system.item.ragebot.enableaimbot )
+	if ( config->get_bool("rageEnable") )
 	{
-		bool baiming = ( config_system.item.ragebot.force_bodyaim && GetAsyncKeyState(config_system.item.config.bind_bodyaim_key) );
+		bool baiming = ( config->get_bool("rageForceBodyAim") && menu->get_hotkey("rageBodyAimKey") );
 		Color baim = baiming ? Color( 132, 195, 16 ) : Color::Red;
 
 		float desyncAmt = Globals::localPlayer->calculateDesyncDelta( );
@@ -470,7 +453,7 @@ void CMisc::drawIndicators( )
 
 void CMisc::removeFlash( )
 {
-	if ( !config_system.item.visuals.removals_flash )
+	if ( !config->get_bool("espRemovalsFlash") )
 		return;
 
 	if ( !Globals::localPlayer )
@@ -493,7 +476,7 @@ void CMisc::removeSmoke( )
 		"particle/vistasmokev1/vistasmokev1_smokegrenade",
 	};
 
-	if ( config_system.item.visuals.removals_smoke )
+	if ( config->get_bool("espRemovalsSmoke") )
 	{
 		for ( auto materialName : smokeMaterials )
 		{
@@ -509,10 +492,10 @@ void CMisc::removeSmoke( )
 auto edge_flags_backup = 0;
 void CMisc::edge_jump_preprediction(CUserCmd* pCmd)
 {
-	if (!config_system.item.misc.edge_jump)
+	if (!config->get_bool("miscEdgeJump"))
 		return;
 
-	if (!GetAsyncKeyState(config_system.item.config.bind_edgejump_key))
+	if (!menu->get_hotkey("miscEdgeJumpKey"))
 		return;
 
 	if (!Globals::localPlayer)
@@ -526,10 +509,10 @@ void CMisc::edge_jump_preprediction(CUserCmd* pCmd)
 
 void CMisc::edge_jump_postprediction(CUserCmd* pCmd)
 {
-	if (!config_system.item.misc.edge_jump)
+	if (!config->get_bool("miscEdgeJump"))
 		return;
 
-	if (!GetAsyncKeyState(config_system.item.config.bind_edgejump_key))
+	if (!menu->get_hotkey("miscEdgeJumpKey"))
 		return;
 
 	if (!Globals::localPlayer)
@@ -541,6 +524,6 @@ void CMisc::edge_jump_postprediction(CUserCmd* pCmd)
 	if (edge_flags_backup & FL_ONGROUND && !(Globals::localPlayer->flags() & FL_ONGROUND))
 		pCmd->buttons |= IN_JUMP;
 
-	if (!(Globals::localPlayer->flags() & FL_ONGROUND) && config_system.item.misc.edge_jump_duck_in_air)
+	if (!(Globals::localPlayer->flags() & FL_ONGROUND) && config->get_bool("miscDuckInAir"))
 		pCmd->buttons |= IN_DUCK;
 }

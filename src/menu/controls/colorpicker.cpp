@@ -4,7 +4,7 @@
 #include <windows.h>
 
 #include "Colorpicker.hpp"
-/*
+
 struct c_rgb { double r, g, b; }; // a fraction between 0 and 1
 struct c_hsv { double h, s, v; }; // a fraction between 0 and 1, but hue is in degrees (0 to 360)
 
@@ -428,4 +428,3 @@ void c_colorpicker::draw( ) {
 		}
 	}
 }
-*/

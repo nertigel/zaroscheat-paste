@@ -1,6 +1,6 @@
 #pragma once
 #include "../menu.hpp"
-/*
+
 class c_colorpicker : public c_element {
 private:
 	bool is_inline;
@@ -30,4 +30,3 @@ public:
 	void draw( ) override;
 
 };
-*/

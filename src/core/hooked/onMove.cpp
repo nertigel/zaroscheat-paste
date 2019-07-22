@@ -47,26 +47,26 @@ bool __fastcall CHookManager::onMove( void *ecx, void *edx, float sampleTime, CU
 			g_Interfaces->globalVars->frametime = intervalPerTick;
 			g_Interfaces->globalVars->curtime = tickbase * intervalPerTick;
 
-			if ( config_system.item.visuals.grenade_prediction )
+			if (config->get_bool("espGrenadePred"))
 				g_GrenadePred.think( userCmd );
 
-			if ( config_system.item.ragebot.fakelag )
+			if (config->get_bool("rageChokeEnable"))
 				g_FakeLag->createMove( );
 
-			if ( config_system.item.misc.clantag_spammer )
+			if (config->get_bool("miscClanTag"))
 				g_Misc.clanTag( ); // TODO: make it so doesnt fuck with fakelag
 
 			g_Features->onMove( sampleTime, userCmd );
 
-			if ( config_system.item.ragebot.antiaim_correction )
+			if (config->get_bool("rageAntiAimCorrection"))
 				g_Resolver.OnCreateMove();
 
 			g_EnginePrediction.run( userCmd );
 			{
-				if ( config_system.item.antiaim.enable_antiaim )
+				if (config->get_bool("aaEnable"))
 					g_AntiAim.onMove( userCmd );
 
-				if ( config_system.item.ragebot.enableaimbot )
+				if (config->get_bool("rageEnable"))
 					g_Aimbot.creatMove( );
 			}
 
@@ -74,7 +74,7 @@ bool __fastcall CHookManager::onMove( void *ecx, void *edx, float sampleTime, CU
 
 			g_Misc.movementFix( Globals::originalViewAngle );
 
-			if ( config_system.item.misc.anti_untrusted );
+			if (config->get_bool("miscAntiUT"));
 				g_Math.clamp( Globals::oCmd->viewAngles );
 
 			static Vector3 last_choked_angles;

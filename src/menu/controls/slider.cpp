@@ -1,5 +1,5 @@
 #include "slider.hpp"
-/*
+
 float map_number( float value, float min_old, float max_old, float min_new, float max_new ) {
 	return ( value - min_old ) / ( max_old - min_old ) * ( max_new - min_new ) + min_new;
 }
@@ -82,4 +82,3 @@ void c_slider::draw( ) {
 
 
 }
-*/
