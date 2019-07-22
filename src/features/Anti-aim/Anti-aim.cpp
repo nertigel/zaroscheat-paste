@@ -574,6 +574,7 @@ void CAntiAim::desync_initialize(CUserCmd* cmd)
 {
 	// if ( Globals::localPlayer->animState( ) && Globals::bSendPacket && g_Interfaces->clientState->ChokedCommands )
 	if (config->get_bool("aaDesync")) {
+
 		/*float desync = Globals::localPlayer->calculateDesyncDelta();
 		float balance = 1.0f;
 
@@ -650,8 +651,8 @@ void CAntiAim::desync_initialize(CUserCmd* cmd)
 				m_iJitter = 0;
 
 			cmd->viewAngles.y = g_Math.normalizeYaw(cmd->viewAngles.y);
-		}
-	}*/
+		}*/
+	}
 }
 
 /*
